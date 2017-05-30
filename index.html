@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+  <meta name="author" content="Geoloep">
+
+  <meta name="keywords" content="kadaster kadastraal kaart uittreksels gratis perceel percelen">
+  <meta name="description" content="Met de Gratis kadastrale kaart van Geoloep kunt u kosteloos kadastrale gegevens inzien en daarvan uittreksels genereren.">
+
+  <!--<link rel="icon" href="../../favicon.ico">-->
+
+  <title>Demo driedimensionale kaart</title>
+
+  <!-- Bootstrap core CSS -->
+  <link href="css/bootstrap.min.css" rel="stylesheet">
+
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">
+  <link rel="stylesheet" href="css/leaflet.css" />
+  <link rel="stylesheet" href="css/jquery.typeahead.min.css" />
+
+  <link href="css/custom.css" rel="stylesheet">
+</head>
+
+<body>
+
+  <div class="navbar navbar-inverse navbar-fixed-top">
+    <div class="container-fluid">
+      <img src="img/g30k.png" alt="Geoloep" class="pull-left" id="g-logo">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false"
+          aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+        <a class="navbar-brand hidden-xs" href="#">Demo driedimensionale kaart</a>
+      </div>
+      <div id="navbar" class="collapse navbar-collapse">
+        <ul class="nav navbar-nav navbar-right">
+          <li class="hidden-md hidden-lg"><a href="#" data-toggle="modal" data-target="#searchModal">Adres zoeken</a></li>
+          <li class="hidden-md hidden-lg"><a href="#" data-toggle="modal" data-target="#perceelModal">Perceelinformatie</a></li>
+          <li class="hidden-md hidden-lg"><a href="#" data-toggle="modal" data-target="#adressenModal" id="adressenModalTrigger">Adressen</a></li>
+          <li class="hidden-md hidden-lg"><a href="#" data-toggle="modal" data-target="#uittreksel" id="uittrekselModalTrigger">Uittreksel opvragen</a></li>
+          <li><a href="#" data-toggle="modal" data-target="#perceel_zoekenModal">Perceel zoeken</a></li>
+          <li><a href="#" data-toggle="modal" data-target="#mover">Over deze dienst</a></li>
+          <li><a href="http://geoloep.nl">Naar Geoloep.nl</a></li>
+        </ul>
+      </div>
+      <!--/.nav-collapse -->
+    </div>
+  </div>
+
+  <div class="container-fluid main">
+    <div class="row">
+
+      <div class="col-md-3 hidden-xs hidden-sm" id="zijbalk">
+        <div id="search" style="padding-bottom: 10px;"></div>
+
+        <div class="alert alert-warning" role="alert" id="js-error">
+          <strong>Helaas!</strong> Het lijkt er op dat uw browser enkele benodigde javascriptfunctionaliteiten niet ondersteunt,
+          de webapplicatie zal waarschijnlijk niet correct werken. Benader deze applicatie indien mogelijk met een recente
+          versie van Mozilla Firefox of Google Chrome.
+        </div>
+
+        <div id="bediening">
+        </div>
+
+      </div>
+
+      <div class="col-md-9" id="kaart">
+      </div>
+    </div>
+  </div>
+
+  <div id="adressenModal" class="modal fade" tabindex="-1" role="dialog">
+    <div class="modal-dialog">
+      <div class="modal-content" id="r_adressen">
+      </div>
+    </div>
+  </div>
+
+  <script src="dist/app.js"></script>
+</body>
+
+</html>

@@ -10,22 +10,22 @@
   "author": "geoloep",
   "private": true,
   "dependencies": {
-    "three": "~0.85.2",
-    "chroma-js": "~1.3.3"
+    "three": "~0.87.0",
+    "chroma-js": "~1.3.0"
   },
   "devDependencies": {
-    "@types/three": "~0.84.7",
-    "@types/geojson": "^1.0.2",
-    "@types/chroma-js": "~1.1.32",
+    "@types/three": "~0.84.0",
+    "@types/geojson": "^1.0.0",
+    "@types/chroma-js": "~1.3.0",
 
-    "cross-env": "^3.0.0",
+    "cross-env": "^5.0.0",
     "css-loader": "^0.25.0",
     "file-loader": "^0.9.0",
 
-    "webpack": "^2.5.1",
-    "webpack-dev-server": "^2.4.5",
+    "webpack": "^3.5.0",
+    "webpack-dev-server": "^2.7.0",
 
-    "typescript": "2.3.2",
-    "ts-loader": "2.0.3"
+    "typescript": "~2.4.0",
+    "ts-loader": "~2.3.0"
   }
 }

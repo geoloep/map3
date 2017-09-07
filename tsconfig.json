@@ -15,10 +15,12 @@
     "removeComments": true,
     "suppressImplicitAnyIndexErrors": true,
     "allowSyntheticDefaultImports": true,
-    "allowJs": true
+    "allowJs": false,
+    "outDir": "lib"
   },
   "include": [
-    "./**/*.ts"
+    "src/**/*",
+    "types/*"
   ],
   "exclude": [
     "node_modules"

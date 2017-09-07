@@ -1,15 +1,17 @@
-import * as THREE from 'three';
+// import THREE from 'three';
+
+import { Camera, Plane, Quaternion, Raycaster, Spherical, Vector2, Vector3, WebGLRenderer} from 'three';
 
 /**
- * Inspired by the three.js orbitcontrols
- * https://github.com/mrdoob/three.js/blob/dev/examples/js/controls/OrbitControls.js
+ * Inspired by the js orbitcontrols
+ * https://github.com/mrdoob/js/blob/dev/examples/js/controls/OrbitControls.js
  */
 
 /**
  * Controls for a Google maps like panning and rotating experience
  */
 export class MapControls {
-    target = new THREE.Vector3();
+    target = new Vector3();
 
     bounds: {
         top: number,
@@ -19,19 +21,19 @@ export class MapControls {
     touch = false;
 
     // For RayCasting
-    mousePosition = new THREE.Vector2();
-    mouseCast = new THREE.Vector3();
-    raycaster = new THREE.Raycaster();
+    mousePosition = new Vector2();
+    mouseCast = new Vector3();
+    raycaster = new Raycaster();
 
     // Panning
     panning = false;
-    panStart = new THREE.Vector3();
-    panOffset = new THREE.Vector3();
+    panStart = new Vector3();
+    panOffset = new Vector3();
 
     // Zooming
     zooming = false;
-    zoomStart = new THREE.Vector2();
-    zoomOffset = new THREE.Vector2();
+    zoomStart = new Vector2();
+    zoomOffset = new Vector2();
     // zoomStart = 0;
 
     minZoom = 0;
@@ -42,9 +44,9 @@ export class MapControls {
 
     // Rotation
     rotating = false;
-    rotateStart = new THREE.Spherical();
-    rotateMouseStart = new THREE.Vector2();
-    rotateOffset = new THREE.Vector2();
+    rotateStart = new Spherical();
+    rotateMouseStart = new Vector2();
+    rotateOffset = new Vector2();
 
     maxPhi = 0.5 * Math.PI;
     minPhi = 0.001;
@@ -54,11 +56,11 @@ export class MapControls {
     // minTheta = 0;
 
     // Camera position
-    quat = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), new THREE.Vector3(0, 0, 1));
-    spherical = new THREE.Spherical();
-    offset = new THREE.Vector3();
+    quat = new Quaternion().setFromUnitVectors(new Vector3(0, 1, 0), new Vector3(0, 0, 1));
+    spherical = new Spherical();
+    offset = new Vector3();
 
-    constructor(private camera: THREE.Camera, private renderer: THREE.WebGLRenderer, private plane: THREE.Plane) {
+    constructor(private camera: Camera, private renderer: WebGLRenderer, private plane: Plane) {
         this.bounds = renderer.domElement.getBoundingClientRect();
 
         renderer.domElement.addEventListener('contextmenu', (e: Event) => {
@@ -84,7 +86,7 @@ export class MapControls {
     }
 
     /**
-     * Called when a rerender of camera position is possible. Replace with your own handler.
+     * Called when a re-render of camera position is possible. Replace with your own handler.
      */
     onChange() {
 
@@ -286,7 +288,7 @@ export class MapControls {
         this.update();
     }
 
-    private raycast(mouse: THREE.Vector2) {
+    private raycast(mouse: Vector2) {
         this.raycaster.setFromCamera(mouse, this.camera);
 
         return this.raycaster.ray.intersectPlane(this.plane, this.mouseCast);

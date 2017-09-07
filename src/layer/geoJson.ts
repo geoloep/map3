@@ -1,25 +1,28 @@
-import * as THREE from 'three';
+// import * as THREE from 'three';
 // import * as chroma from 'chroma-js';
 
+import chroma from 'chroma-js';
+import {Group, Mesh, MeshBasicMaterial, Shape} from 'three';
+
 export default class GeoJsonLayer {
-    group = new THREE.Group();
+    group = new Group();
 
     constructor(private geosjon: GeoJSON.FeatureCollection<GeoJSON.Polygon>) {
 
     }
 
     mesh() {
-        for (let feature of this.geosjon.features) {
+        for (const feature of this.geosjon.features) {
             // if (feature.geometry.type === 'Polygon') {
-                let shape = this.geometryToShape(feature.geometry);
-                this.group.add(new THREE.Mesh(new (THREE as any).ShapeBufferGeometry(shape)));
+                const shape = this.geometryToShape(feature.geometry);
+                this.group.add(new Mesh(new (THREE as any).ShapeBufferGeometry(shape)));
             // }
         }
 
         return this.group;
     }
 
-    geometryToShape(geom: GeoJSON.Polygon | GeoJSON.MultiPolygon): THREE.Shape {
+    geometryToShape(geom: GeoJSON.Polygon | GeoJSON.MultiPolygon): Shape {
         console.log(geom);
         switch (geom.type) {
             case 'Polygon':
@@ -28,17 +31,17 @@ export default class GeoJsonLayer {
                 return this.multiPolygonToShape(geom);
             default:
                 console.error(`Cannot convert ${geom} into a shape`);
-                return new THREE.Shape();
+                return new Shape();
         }
     }
 
     polygonToShape(geom: GeoJSON.Polygon) {
-        let shape = new THREE.Shape();
+        const shape = new Shape();
 
         let first = true;
 
-        for (let ring of geom.coordinates) {
-            for (let vertice of ring) {
+        for (const ring of geom.coordinates) {
+            for (const vertice of ring) {
                 if (first) {
                     shape.moveTo(vertice[0], vertice[1]);
                     first = false;
@@ -53,14 +56,13 @@ export default class GeoJsonLayer {
     }
 
     multiPolygonToShape(geom: GeoJSON.MultiPolygon) {
-        console.log('ja')
-        let shape = new THREE.Shape();
+        const shape = new Shape();
 
         let first = true;
 
-        for (let part of geom.coordinates) {
-            for (let ring of part) {
-                for (let vertice of ring) {
+        for (const part of geom.coordinates) {
+            for (const ring of part) {
+                for (const vertice of ring) {
                     if (first) {
                         shape.moveTo(vertice[0], vertice[1]);
                         first = false;
@@ -77,7 +79,7 @@ export default class GeoJsonLayer {
     }
 
     material() {
-        return new THREE.MeshBasicMaterial({
+        return new MeshBasicMaterial({
             color: 0x2194ce,
         });
     }

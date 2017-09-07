@@ -1,5 +1,7 @@
-import * as THREE from 'three';
+// import * as THREE from 'three';
 import * as chroma from 'chroma-js';
+
+import {Mesh, Shape} from 'three';
 
 import VectorLayer from './vector';
 
@@ -13,12 +15,12 @@ export default class PolygonLayer extends VectorLayer {
     }
 
     polygonToShape(geom: GeoJSON.Polygon) {
-        let shape = new THREE.Shape();
+        const shape = new Shape();
 
         let first = true;
 
-        for (let ring of geom.coordinates) {
-            for (let vertice of ring) {
+        for (const ring of geom.coordinates) {
+            for (const vertice of ring) {
                 if (first) {
                     shape.moveTo(vertice[0], vertice[1]);
                     first = false;
@@ -32,13 +34,13 @@ export default class PolygonLayer extends VectorLayer {
         return shape;
     }
 
-    mesh(): THREE.Mesh {
-        let style = this.parseStyle(this.style);
+    mesh(): Mesh {
+        const style = this.parseStyle(this.style);
 
-        let shape = this.polygonToShape(this.feature.geometry);
+        const shape = this.polygonToShape(this.feature.geometry);
 
-        let geom = this.styleToGeometry(shape, style);
+        const geom = this.styleToGeometry(shape, style);
 
-        return new THREE.Mesh(geom, this.styleToMaterial(style));
+        return new Mesh(geom, this.styleToMaterial(style));
     }
 }

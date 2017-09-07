@@ -1,4 +1,4 @@
-import * as THREE from 'three';
+import { Mesh, Shape } from 'three';
 
 import Polygon from './polygon';
 import VectorLayer from './vector';
@@ -9,14 +9,14 @@ export default class MulitPolygonLayer extends VectorLayer {
     }
 
     multiPolygonToShape(geom: GeoJSON.MultiPolygon) {
-        let shapes: THREE.Shape[] = [];
+        const shapes: Shape[] = [];
 
-        for (let part of geom.coordinates) {
-            let shape = new THREE.Shape();
+        for (const part of geom.coordinates) {
+            const shape = new Shape();
             let first = true;
 
-            for (let ring of part) {
-                for (let vertice of ring) {
+            for (const ring of part) {
+                for (const vertice of ring) {
                     if (first) {
                         shape.moveTo(vertice[0], vertice[1]);
                         first = false;
@@ -32,20 +32,17 @@ export default class MulitPolygonLayer extends VectorLayer {
         return shapes;
     }
 
-    mesh(): THREE.Mesh {
-        let style = this.parseStyle(this.style);
+    mesh(): Mesh {
+        const style = this.parseStyle(this.style);
 
         // let shape = this.polygonToShape(this.feature.geometry);
-        let shape = this.multiPolygonToShape(this.feature.geometry);
+        const shape = this.multiPolygonToShape(this.feature.geometry);
 
-        let geom = this.styleToGeometry(shape, style);
-
-
+        const geom = this.styleToGeometry(shape, style);
 
         // let geom = new (THREE as any).ShapeBufferGeometry(shape);
 
-        return new THREE.Mesh(geom, this.styleToMaterial(style));
-
+        return new Mesh(geom, this.styleToMaterial(style));
 
         // return new THREE.Mesh(geom);
     }

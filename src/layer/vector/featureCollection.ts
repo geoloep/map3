@@ -1,23 +1,26 @@
-import * as THREE from 'three';
+// import * as THREE from 'three';
 // import * as chroma from 'chroma-js';
+
+import { Group, MeshBasicMaterial, Shape} from 'three';
+import chroma from 'chroma-js';
 
 import Polygon from './polygon';
 import MultiPolygon from './multiPolygon';
 
 export default class FeatureCollectionLayer {
-    group = new THREE.Group();
+    group = new Group();
 
     constructor(private geosjon: GeoJSON.FeatureCollection<GeoJSON.Polygon>, readonly style?: any) {
 
     }
 
     mesh() {
-        for (let feature of this.geosjon.features) {
+        for (const feature of this.geosjon.features) {
             // if (feature.geometry.type === 'Polygon') {
             // let shape = this.geometryToShape(feature.geometry);
-            // this.group.add(new THREE.Mesh(new (THREE as any).ShapeBufferGeometry(shape)));
+            // this.group.add(new Mesh(new (THREE as any).ShapeBufferGeometry(shape)));
             // }
-            let layer = this.featureToLayer(feature);
+            const layer = this.featureToLayer(feature);
             if (layer) {
                 this.group.add(layer.mesh());
             }
@@ -38,7 +41,7 @@ export default class FeatureCollectionLayer {
         }
     }
 
-    // geometryToShape(geom: GeoJSON.Polygon | GeoJSON.MultiPolygon): THREE.Shape {
+    // geometryToShape(geom: GeoJSON.Polygon | GeoJSON.MultiPolygon): Shape {
     //     console.log(geom);
     //     switch (geom.type) {
     //         case 'Polygon':
@@ -47,17 +50,17 @@ export default class FeatureCollectionLayer {
     //             return this.multiPolygonToShape(geom);
     //         default:
     //             console.error(`Cannot convert ${geom} into a shape`);
-    //             return new THREE.Shape();
+    //             return new Shape();
     //     }
     // }
 
     polygonToShape(geom: GeoJSON.Polygon) {
-        let shape = new THREE.Shape();
+        const shape = new Shape();
 
         let first = true;
 
-        for (let ring of geom.coordinates) {
-            for (let vertice of ring) {
+        for (const ring of geom.coordinates) {
+            for (const vertice of ring) {
                 if (first) {
                     shape.moveTo(vertice[0], vertice[1]);
                     first = false;
@@ -72,14 +75,14 @@ export default class FeatureCollectionLayer {
     }
 
     multiPolygonToShape(geom: GeoJSON.MultiPolygon) {
-        console.log('ja')
-        let shape = new THREE.Shape();
+        console.log('ja');
+        const shape = new Shape();
 
         let first = true;
 
-        for (let part of geom.coordinates) {
-            for (let ring of part) {
-                for (let vertice of ring) {
+        for (const part of geom.coordinates) {
+            for (const ring of part) {
+                for (const vertice of ring) {
                     if (first) {
                         shape.moveTo(vertice[0], vertice[1]);
                         first = false;
@@ -96,7 +99,7 @@ export default class FeatureCollectionLayer {
     }
 
     material() {
-        return new THREE.MeshBasicMaterial({
+        return new MeshBasicMaterial({
             color: 0x2194ce,
         });
     }

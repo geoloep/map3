@@ -1,4 +1,9 @@
+import CRS from './projection/28992';
 import Renderer from './renderer/renderer';
+
+import { ILayer } from './layer/layer';
+
+import { Bounds } from './geometry/basic';
 
 export interface IMapOptions {
     renderer: Renderer;
@@ -11,8 +16,9 @@ export default class Map {
     options: IMapOptions;
 
     renderer: Renderer;
+    projection = new CRS();
 
-    private layers: any[];
+    private layers: any[] = [];
 
     constructor(container: string, options?: IMapOptions) {
         const element: HTMLElement | null = document.getElementById(container);
@@ -24,13 +30,22 @@ export default class Map {
         }
     }
 
-    addLayer(layer: any) {
+    addLayer(layer: ILayer) {
         this.layers.push(layer);
+        this.renderer.scene.add(layer.mesh);
+
+        layer.onAdd(this);
+
+        this.renderer.render();
     }
 
     removeLayer(layer: any) {
         if (this.layers.indexOf(layer) >= 0) {
             this.layers.splice(this.layers.indexOf(layer), 1);
         }
+    }
+
+    getBounds() {
+        return this.renderer.getBounds();
     }
 }

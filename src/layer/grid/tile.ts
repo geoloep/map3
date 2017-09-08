@@ -1,17 +1,44 @@
 import { ILayer } from '../layer';
 
-import { Mesh, Vector2, PlaneBufferGeometry } from 'three';
+import { Group, Mesh, MeshBasicMaterial, PlaneBufferGeometry, TextureLoader, Vector2 } from 'three';
 
 export default class Tile implements ILayer {
-    mesh: Mesh;
+    mesh = new Group();
 
     private geom: PlaneBufferGeometry;
+    private tileMesh: Mesh;
 
-    constructor(origin: Vector2, size: Vector2) {
-        this.geom = new PlaneBufferGeometry(size.x, size.y);
-        this.geom.translate(origin.x, origin.y, 0);
+    constructor(public origin: Vector2, public size: number, public image?: string) {
+        this.constructTile();
+    }
 
-        this.mesh = new Mesh(this.geom);
+    private async constructTile() {
+        this.geom = new PlaneBufferGeometry(this.size, this.size);
+
+        // Move the top-left corner tot the origin vector
+        this.geom.translate(this.origin.x + this.size * 0.5, this.origin.y - this.size * 0.5, 0);
+
+        let material: MeshBasicMaterial | undefined;
+
+        if (this.image) {
+            material = await this.imageMaterial(this.image);
+        }
+
+        this.tileMesh = new Mesh(this.geom, material);
+        this.mesh.add(this.tileMesh);
+    }
+
+    private async imageMaterial(path: string) {
+        return new Promise<MeshBasicMaterial>((resolve, reject) => {
+            const loader = new TextureLoader();
+            loader.crossOrigin = '';
+
+            loader.load(path, (texture) => {
+                resolve (new MeshBasicMaterial({
+                    map: texture,
+                }));
+            });
+        });
     }
 
     onAdd() {

@@ -1,6 +1,6 @@
 import { Mesh } from 'three';
 
-import Map from '../map';
+import Map from '../core/map';
 
 export interface ILayer {
     mesh: any;

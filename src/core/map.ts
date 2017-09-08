@@ -1,9 +1,12 @@
-import CRS from './projection/28992';
-import Renderer from './renderer/renderer';
+import CRS from '../projection/28992';
+import Renderer from '../renderer/renderer';
 
-import { ILayer } from './layer/layer';
+import { Bounds } from '../geometry/basic';
+import GridUtil from '../layer/grid/gridUtil';
+import { ILayer } from '../layer/layer';
 
-import { Bounds } from './geometry/basic';
+import { Vector2 } from 'three';
+
 
 export interface IMapOptions {
     renderer: Renderer;
@@ -17,6 +20,8 @@ export default class Map {
 
     renderer: Renderer;
     projection = new CRS();
+
+    gridUtil = new GridUtil(this);
 
     private layers: any[] = [];
 
@@ -45,7 +50,11 @@ export default class Map {
         }
     }
 
-    getBounds() {
+    get bounds() {
         return this.renderer.getBounds();
+    }
+
+    get center() {
+        return new Vector2(this.renderer.camera.position.x, this.renderer.camera.position.y);
     }
 }

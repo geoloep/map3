@@ -43,6 +43,8 @@ export default class Renderer {
         container.appendChild(renderer.domElement);
 
         camera.position.set(142892.19, 470783.87, 250000);
+        // camera.position.set(-285401.920, 903401.920, 250000);
+
         camera.up.set(0, 0, 1);
 
         const plane = this.plane = new Plane(new Vector3(0, 0, 1));
@@ -79,15 +81,15 @@ export default class Renderer {
     }
 
     getBounds() {
-        const topLeftRay = new Raycaster();
-        const bottomRightRay = new Raycaster();
+        const bottomLeftRay = new Raycaster();
+        const topRightRay = new Raycaster();
 
-        topLeftRay.setFromCamera(new Vector2(-1, 1), this.camera);
-        bottomRightRay.setFromCamera(new Vector2(1, -1), this.camera);
+        bottomLeftRay.setFromCamera(new Vector2(-1, -1), this.camera);
+        topRightRay.setFromCamera(new Vector2(1, 1), this.camera);
 
         return new Bounds(
-            topLeftRay.ray.intersectPlane(this.plane),
-            bottomRightRay.ray.intersectPlane(this.plane)
-        )
+            bottomLeftRay.ray.intersectPlane(this.plane),
+            topRightRay.ray.intersectPlane(this.plane),
+        );
     }
 }

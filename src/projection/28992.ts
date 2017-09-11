@@ -26,6 +26,10 @@ export default class RD {
         return (this.zeroScale * Math.pow(0.5, zoom));
     }
 
+    zoom(resolution: number) {
+        return Math.log(resolution / this.zeroScale) / (Math.log(0.5));
+    }
+
     transform(point: Vector2) {
         return new Vector2(
             point.x - this.tileOrigin.x,

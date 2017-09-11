@@ -1,6 +1,8 @@
 // import THREE from 'three';
+import Map from '../core/map';
 
-import { Camera, Plane, Quaternion, Raycaster, Spherical, Vector2, Vector3, WebGLRenderer} from 'three';
+import { EventEmitter } from 'eventemitter3';
+import { Camera, Plane, Quaternion, Raycaster, Spherical, Vector2, Vector3, WebGLRenderer } from 'three';
 
 /**
  * Inspired by the js orbitcontrols
@@ -11,6 +13,8 @@ import { Camera, Plane, Quaternion, Raycaster, Spherical, Vector2, Vector3, WebG
  * Controls for a Google maps like panning and rotating experience
  */
 export class MapControls {
+    events = new EventEmitter();
+
     target = new Vector3();
 
     bounds: {
@@ -34,12 +38,12 @@ export class MapControls {
     zooming = false;
     zoomStart = new Vector2();
     zoomOffset = new Vector2();
-    // zoomStart = 0;
 
+    zoomLevel = 8;
     minZoom = 0;
-    maxZoom = 400000;
+    maxZoom = 14;
 
-    zoomScale = 100;
+    // zoomScale = 100;
     touchZoomScale = 500000;
 
     // Rotation
@@ -48,7 +52,7 @@ export class MapControls {
     rotateMouseStart = new Vector2();
     rotateOffset = new Vector2();
 
-    maxPhi = 0.5 * Math.PI;
+    maxPhi = (2 * Math.PI) / 5;
     minPhi = 0.001;
 
     // No use fot his yet?
@@ -60,7 +64,7 @@ export class MapControls {
     spherical = new Spherical();
     offset = new Vector3();
 
-    constructor(private camera: Camera, private renderer: WebGLRenderer, private plane: Plane) {
+    constructor(private map: Map, private camera: Camera, private renderer: WebGLRenderer, private plane: Plane) {
         this.bounds = renderer.domElement.getBoundingClientRect();
 
         renderer.domElement.addEventListener('contextmenu', (e: Event) => {
@@ -83,13 +87,6 @@ export class MapControls {
         this.target.set(camera.position.x, camera.position.y, 0);
 
         window.requestAnimationFrame(this.animate);
-    }
-
-    /**
-     * Called when a re-render of camera position is possible. Replace with your own handler.
-     */
-    onChange() {
-
     }
 
     private onMouseMove = (e: MouseEvent) => {
@@ -122,8 +119,13 @@ export class MapControls {
     private onMouseUp = (e: MouseEvent) => {
         e.preventDefault();
 
-        this.stopPan();
-        this.stopRotate();
+        if (this.panning) {
+            this.stopPan();
+        }
+
+        if (this.rotating) {
+            this.stopRotate();
+        }
     }
 
     private onTouchDown = (e: TouchEvent) => {
@@ -165,7 +167,7 @@ export class MapControls {
     private setMousePosition(x: number, y: number) {
         this.mousePosition.set(
             (x / this.renderer.domElement.clientWidth) * 2 - 1,
-            - (y / this.renderer.domElement.clientWidth) * 2 + 1,
+            - (y / this.renderer.domElement.clientHeight) * 2 + 1,
         );
     }
 
@@ -210,50 +212,93 @@ export class MapControls {
 
         // console.log(this.camera.position);
 
-        this.onChange();
+        this.events.emit('move');
     }
 
     private startPan() {
-        // console.log('startPan');
-
         this.panStart.copy(this.raycast(this.mousePosition));
         this.panning = true;
+
+        this.events.emit('panstart');
+        this.events.emit('movestart');
     }
 
     private stopPan() {
         this.panning = false;
+
+        this.events.emit('panend');
+        this.events.emit('moveend');
     }
 
     private startZoom() {
-        // console.log('startZoom');
         this.zoomStart.copy(this.mousePosition);
         this.zooming = true;
+
+        this.events.emit('zoomstart');
+        this.events.emit('movestart');
     }
 
     private stopZoom() {
         this.zooming = false;
+
+        this.events.emit('zoomend');
+        this.events.emit('moveend');
     }
 
     private zoomIn(e: WheelEvent) {
-        this.spherical.radius = Math.max(this.spherical.radius + e.deltaY * this.zoomScale, this.minZoom);
+        this.events.emit('zoomstart');
+        this.events.emit('movestart');
+
+        this.zoomLevel += this.map.options.zoomstep;
+
+        if (this.zoomLevel > this.maxZoom) {
+            this.zoomLevel = this.maxZoom;
+        }
+
+        this.setZoom(this.zoomLevel);
+
+        // this.spherical.radius = Math.max(this.spherical.radius + e.deltaY * this.zoomScale, this.minZoom);
 
         this.update();
+
+        this.events.emit('zoomend');
+        this.events.emit('moveend');
     }
 
     private zoomOut(e: WheelEvent) {
-        this.spherical.radius = Math.min(this.spherical.radius + e.deltaY * this.zoomScale, this.maxZoom);
+        this.events.emit('zoomstart');
+        this.events.emit('movestart');
+
+        this.zoomLevel -= this.map.options.zoomstep;
+
+        if (this.zoomLevel < this.minZoom) {
+            this.zoomLevel = this.minZoom;
+        }
+
+        this.setZoom(this.zoomLevel);
+
+        // this.spherical.radius = Math.min(this.spherical.radius + e.deltaY * this.zoomScale, this.maxZoom);
 
         this.update();
+
+        this.events.emit('zoomend');
+        this.events.emit('moveend');
     }
 
     private startRotate() {
         this.rotating = true;
         this.rotateStart.copy(this.spherical);
         this.rotateMouseStart.copy(this.mousePosition);
+
+        this.events.emit('rotatestart');
+        this.events.emit('movestart');
     }
 
     private stopRotate() {
         this.rotating = false;
+
+        this.events.emit('rotateend');
+        this.events.emit('moveend');
     }
 
     private rotate() {
@@ -286,6 +331,31 @@ export class MapControls {
         this.zoomStart.copy(this.mousePosition);
 
         this.update();
+    }
+
+    private setZoom(zoom: number) {
+        this.spherical.radius = this.zoomDist(zoom);
+    }
+
+    private zoomDist(zoom: number) {
+        const res = this.map.projection.resolution(zoom);
+
+        const fov = this.map.renderer.camera.fov * Math.PI / 180;
+        const ratio = 2 * Math.tan(fov / 2);
+
+        const distance = (this.map.renderer.clientHeight * res) / ratio;
+        return distance;
+
+        // console.log(this.zoomLevel, res, distance, ratio);
+
+        // const visibleHeight = this.map.renderer.clientHeight * res;
+
+        // const distance = this.map.horizon.distanceTo(this.map.renderer.camera.position);
+        // const fov = this.map.renderer.camera.fov * Math.PI / 180;
+
+        // const visibleHeight = 2 * Math.tan( fov / 2 ) * distance;
+
+        // return visibleHeight / this.map.renderer.clientHeight ;
     }
 
     private raycast(mouse: Vector2) {

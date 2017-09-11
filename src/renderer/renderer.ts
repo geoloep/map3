@@ -1,19 +1,33 @@
-// import * as THREE from 'three';
+import {AmbientLight, Camera, Clock, DirectionalLight, Mesh, PerspectiveCamera, Plane, Raycaster, Scene, SphereBufferGeometry, Vector2, Vector3, WebGLRenderer} from 'three';
 
-import {AmbientLight, Camera, Clock, DirectionalLight, PerspectiveCamera, Plane, Raycaster, Scene, Vector2, Vector3, WebGLRenderer} from 'three';
-
-import { Bounds } from '../geometry/basic';
 import { MapControls } from '../controls/mapControls';
+import Map from '../core/map';
+import { Bounds } from '../geometry/basic';
 
 export default class Renderer {
+    // events = new EventEmitter();
+
     renderer: WebGLRenderer;
     scene: Scene;
-    camera: Camera;
+    camera: PerspectiveCamera;
     controls: any;
     clock = new Clock();
     plane: Plane;
 
-    constructor(container: HTMLElement) {
+    private horizonRay = new Raycaster();
+
+    // Objects for calculating bounds
+    private boundRay = new Raycaster();
+    private screenVectors = [
+        new Vector2(-1, -1),
+        new Vector2(-1, 1),
+        new Vector2(1, -1),
+        new Vector2(1, 1),
+    ];
+    private bottomLeft = new Vector2(Infinity, Infinity);
+    private topRight = new Vector2(-Infinity, -Infinity);
+
+    constructor(readonly map: Map, readonly container: HTMLElement) {
         const camera = this.camera = new PerspectiveCamera(60, container.clientWidth / container.clientHeight, 1, 20000000);
         const scene = this.scene = new Scene();
 
@@ -42,17 +56,17 @@ export default class Renderer {
 
         container.appendChild(renderer.domElement);
 
-        camera.position.set(142892.19, 470783.87, 250000);
+        camera.position.set(142892.19, 470783.87, 15000);
         // camera.position.set(-285401.920, 903401.920, 250000);
 
         camera.up.set(0, 0, 1);
 
         const plane = this.plane = new Plane(new Vector3(0, 0, 1));
 
-        const controls = new MapControls(camera, renderer, plane);
+        const controls = this.controls = new MapControls(map, camera, renderer, plane);
 
-        // let sg = new SphereBufferGeometry(20000, 32, 32);
-        // let sp = new Mesh(sg);
+        // const sg = new SphereBufferGeometry(20000, 32, 32);
+        // const sp = new Mesh(sg);
         // sp.position.copy(controls.target);
         // scene.add(sp);
 
@@ -62,9 +76,14 @@ export default class Renderer {
 
         // });
 
-        controls.onChange = () => {
+        // controls.onChange = () => {
+        //     this.render();
+        //     // sp.position.copy(controls.panStart);
+        // };
+
+        controls.events.on('move', () => {
             this.render();
-        };
+        });
 
         this.render();
     }
@@ -80,16 +99,65 @@ export default class Renderer {
         this.renderer.render(this.scene, this.camera);
     }
 
-    getBounds() {
-        const bottomLeftRay = new Raycaster();
-        const topRightRay = new Raycaster();
+    get bounds() {
+        this.bottomLeft.set(Infinity, Infinity);
+        this.topRight.set(-Infinity, -Infinity);
 
-        bottomLeftRay.setFromCamera(new Vector2(-1, -1), this.camera);
-        topRightRay.setFromCamera(new Vector2(1, 1), this.camera);
+        for (const screenPos of this.screenVectors) {
+            this.boundRay.setFromCamera(screenPos, this.camera);
+
+            const point = this.boundRay.ray.intersectPlane(this.plane);
+
+            if (point === null) {
+                // what to do?
+            }  else {
+                this.bottomLeft.set(Math.min(this.bottomLeft.x, point.x), Math.min(this.bottomLeft.y, point.y));
+                this.topRight.set(Math.max(this.topRight.x, point.x), Math.max(this.topRight.y, point.y));
+            }
+        }
+
+        console.log(this.bottomLeft);
+        console.log(this.topRight);
 
         return new Bounds(
-            bottomLeftRay.ray.intersectPlane(this.plane),
-            topRightRay.ray.intersectPlane(this.plane),
+            this.bottomLeft,
+            this.topRight,
         );
+
+        // const bottomLeftRay = new Raycaster();
+        // const topRightRay = new Raycaster();
+
+        // bottomLeftRay.setFromCamera(new Vector2(-1, -1), this.camera);
+        // topRightRay.setFromCamera(new Vector2(1, 1), this.camera);
+
+        // let bottomLeftVec = bottomLeftRay.ray.intersectPlane(this.plane);
+        // let topRightVec = topRightRay.ray.intersectPlane(this.plane);
+
+        // if (bottomLeftVec === null) {
+        //     bottomLeftVec = new Vector3(Infinity, Infinity, 0);
+        // }
+
+        // if (topRightVec === null) {
+        //     topRightVec = new Vector3(Infinity, Infinity, 0);
+        // }
+
+        // return new Bounds(
+        //     bottomLeftVec,
+        //     topRightVec,
+        // );
+    }
+
+    get horizon() {
+        this.horizonRay.setFromCamera(new Vector2(0, -1), this.camera);
+
+        return this.horizonRay.ray.intersectPlane(this.plane);
+    }
+
+    get clientWidth() {
+        return this.container.clientWidth;
+    }
+
+    get clientHeight() {
+        return this.container.clientHeight;
     }
 }

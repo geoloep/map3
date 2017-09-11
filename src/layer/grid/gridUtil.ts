@@ -1,16 +1,38 @@
 import Map from '../../core/map';
 import Projection from '../../projection/28992';
 
+import { EventEmitter } from 'eventemitter3';
+
 import { Bounds } from '../../geometry/basic';
 
 import { Vector2, Vector3 } from 'three';
 
 export default class GridUtil {
-    constructor(readonly map: Map) {
+    events = new EventEmitter();
 
+    private tiles: Vector3[];
+
+    constructor(readonly map: Map) {
+        this.map.events.on('moveend', () => {
+            this.calculateTiles();
+            const res = this.calculateRes();
+
+            // const zoom = this.map.projection.zoom(res);
+
+            console.log(res);
+        });
     }
 
-    visibleTiles(zoom: number) {
+    get currentTiles() {
+        return this.tiles;
+    }
+
+    private calculateTiles() {
+        const zoom = Math.ceil(this.calculateZoom(this.calculateRes()));
+
+        console.log(zoom);
+
+
         const bounds = this.map.bounds.clamp(this.map.projection.bounds);
         const tileSize = this.map.projection.tileSize * this.map.projection.resolution(zoom);
 
@@ -35,10 +57,6 @@ export default class GridUtil {
                 break;
             }
 
-            // if (x > 30) {
-            //     break;
-            // }
-
             for (let y = topLeftTile.y; ; y++) {
                 tileBounds.bottomLeft.setY(y * tileSize);
                 tileBounds.topRight.setY(y * tileSize + tileSize);
@@ -47,27 +65,17 @@ export default class GridUtil {
                     break;
                 }
 
-                // if (y > 20) {
-                //     break;
-                // }
-
-                // if (transformedBounds.contains(tileBounds.topLeft)) {
                 position.set(x, y, zoom);
                 tiles.push(position.clone());
-                // } else {
-                    // break;
-                // }
-                // break;
             }
         }
 
-        return tiles;
+        this.tiles = tiles;
+        this.events.emit('renew');
     }
 
     private pointToTilePos(point: Vector2, zoom: number) {
         const scale = this.map.projection.resolution(zoom);
-
-        // const transformed = this.map.projection.transform(point);
 
         // Should be cloned?
         point.divideScalar(scale).divideScalar(this.map.projection.tileSize).floor();
@@ -75,8 +83,16 @@ export default class GridUtil {
         return new Vector3(point.x, point.y, zoom);
     }
 
-    private tileToBounds(position: Vector3, tileSize: number) {
-        // const tileSize = this.map.projection.tileSize * this.map.projection.resolution(position.z);
-        // const tileOrigin = this.map.projection.untransform(new Vector2(position.x, position.y).multiplyScalar(this.map.projection.tileSize).multiplyScalar(this.map.projection.resolution(position.z)));
+    private calculateRes() {
+        const distance = this.map.horizon.distanceTo(this.map.renderer.camera.position);
+        const fov = this.map.renderer.camera.fov * Math.PI / 180;
+
+        const visibleHeight = 2 * Math.tan( fov / 2 ) * distance;
+
+        return visibleHeight / this.map.renderer.clientHeight ;
+    }
+
+    private calculateZoom(res: number) {
+        return this.map.projection.zoom(res);
     }
 }

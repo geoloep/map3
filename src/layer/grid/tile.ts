@@ -1,8 +1,11 @@
+import { EventEmitter } from 'eventemitter3';
 import { ILayer } from '../layer';
 
 import { Group, Mesh, MeshBasicMaterial, PlaneBufferGeometry, TextureLoader, Vector2 } from 'three';
 
 export default class Tile implements ILayer {
+    events = new EventEmitter();
+
     mesh = new Group();
 
     private geom: PlaneBufferGeometry;
@@ -26,6 +29,8 @@ export default class Tile implements ILayer {
 
         this.tileMesh = new Mesh(this.geom, material);
         this.mesh.add(this.tileMesh);
+
+        this.events.emit('tileloaded');
     }
 
     private async imageMaterial(path: string) {

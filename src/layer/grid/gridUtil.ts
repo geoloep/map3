@@ -31,7 +31,7 @@ export default class GridUtil {
     constructor(readonly map: Map) {
         this.map.events.on('moveend', () => {
             this.calculateTiles();
-            const res = this.calculateRes();
+            const res = this.horizonResolution();
 
             // const zoom = this.map.projection.zoom(res);
 
@@ -41,99 +41,6 @@ export default class GridUtil {
 
     get currentTiles() {
         return this.tiles;
-    }
-
-    private calculateTilesOld() {
-        /*
-        const zoom = Math.ceil(this.calculateZoom(this.calculateRes()));
-
-        console.log(zoom);
-
-
-        const bounds = this.map.bounds.clamp(this.map.projection.bounds);
-        const tileSize = this.map.projection.tileSize * this.map.projection.resolution(zoom);
-
-        // Create bounds in transfomed space
-        const transformedBounds = new Bounds(
-            this.map.projection.transform(bounds.topLeft),
-            this.map.projection.transform(bounds.bottomRight),
-        );
-
-        const tiles: Vector3[] = [];
-
-        const topLeftTile = this.pointToTilePos(transformedBounds.bottomLeft, zoom, this.newTarget);
-
-        const position = new Vector3();
-        const tileBounds = new Bounds(new Vector2(), new Vector2());
-
-        for (let x = topLeftTile.x; ; x++) {
-            tileBounds.bottomLeft.setX(x * tileSize);
-            tileBounds.topRight.setX(x * tileSize + tileSize);
-
-            if (tileBounds.left > transformedBounds.right) {
-                break;
-            }
-
-            for (let y = topLeftTile.y; ; y++) {
-                tileBounds.bottomLeft.setY(y * tileSize);
-                tileBounds.topRight.setY(y * tileSize + tileSize);
-
-                if (tileBounds.bottom > transformedBounds.top) {
-                    break;
-                }
-
-                position.set(x, y, zoom);
-                tiles.push(position.clone());
-            }
-        }
-
-        this.tiles = tiles;
-        this.events.emit('renew');
-        */
-    }
-
-    private calculateTilesNew() {
-        /*
-        const zoom = Math.ceil(this.calculateZoom(this.calculateRes()));
-        const horizon = this.map.horizon;
-        const target = new Vector2(horizon.x, horizon.y);
-
-        let i: number;
-        let j: number;
-
-
-        this.newTiles.splice(0);
-
-        const tileAtZoom = this.newTarget;
-        let tileToSplit: Vector3;
-
-        // Start with better startTile
-        this.newTiles.push(new Vector3(0, 0, 0));
-
-        // while (true) {
-        //     for (let tile of this.newTiles) () {
-
-        //     }
-        // }
-
-        // // Break down to horizontile
-        for (i = 0; i < zoom; i++) {
-            this.pointToTilePos(target, i, tileAtZoom);
-
-            // for (const tile of this.newTiles) {
-            //     if (tile.equals(tileAtZoom)) {
-            //         this.newTiles.splice(this.newTiles.indexOf(tile), )
-            //     }
-            // }
-
-            for (j = 0; j < this.newTiles.length; j++) {
-                if (this.newTiles[j].equals(tileAtZoom)) {
-                    tileToSplit = this.newTiles[j];
-                    this.newTiles.splice(j, 1);
-                }
-            }
-        }
-*/
     }
 
     private calculateTiles() {
@@ -162,14 +69,15 @@ export default class GridUtil {
         }
 
         // Break tile down until we reach the horizontile at the right zoomlevel
-        const zoom = Math.ceil(this.calculateZoom(this.calculateRes()));
+        const zoom = Math.ceil(this.calculateZoom(this.horizonResolution()));
         const horizon = this.map.horizon;
         const target = this.map.projection.transform(new Vector2(horizon.x, horizon.y));
         const tileAtZoom = topLeftTile;
         let tileToSplit: Vector3;
 
         this.tiles.splice(0);
-        this.tiles.push(startTile);
+        this.newTiles.splice(0);
+        this.newTiles.push(startTile);
 
         // Move through the zoomlevels
         for (i = startTile.z; i < zoom; i++) {
@@ -177,18 +85,29 @@ export default class GridUtil {
             this.pointToTilePos(target, i, tileAtZoom);
 
             // Check all tiles
-            for (j = 0; j < this.tiles.length; j++) {
-                if (this.tiles[j].equals(tileAtZoom)) {
+            for (j = 0; j < this.newTiles.length; j++) {
+                if (this.newTiles[j].equals(tileAtZoom)) {
                     // If the target intersects this tile: split it
-                    tileToSplit = this.tiles[j];
-                    this.tiles.splice(j, 1);
+                    tileToSplit = this.newTiles[j];
+                    this.newTiles.splice(j, 1);
 
                     for (const splitTile of this.tileSplit(tileToSplit)) {
-                        this.tiles.push(splitTile);
+                        this.newTiles.push(splitTile);
                     }
                 }
             }
         }
+
+        let checkTile: Vector3;
+        let resolution: number;
+
+        // check all new tiles
+        while (this.newTiles.length > 0) {
+            checkTile = (this.newTiles.pop() as Vector3);
+
+            console.log(this.tileCenter(checkTile));
+        }
+
         console.log(this.tiles.length);
         this.events.emit('renew');
     }
@@ -215,23 +134,40 @@ export default class GridUtil {
         return children;
     }
 
-    /**
-     * Calculte the resolution at the horizon point
-     */
-    private calculateRes() {
-        const distance = this.map.horizon.distanceTo(this.map.renderer.camera.position);
-        const fov = this.map.renderer.camera.fov * Math.PI / 180;
+    private tileCenter(tile: Vector3) {
+        const scale = this.map.projection.resolution(tile.z);
+        return this.map.projection.untransform(tile.clone().multiplyScalar(this.map.projection.tileSize).multiplyScalar(scale)).addScalar(this.map.projection.tileSize * tile.z);
+    }
 
-        const visibleHeight = 2 * Math.tan(fov / 2) * distance;
+    /**
+     * Calculate the distance to resolution ratio
+     */
+    private resolutionRatio() {
+        const fov = this.map.renderer.camera.fov * Math.PI / 180;
+        return 2 * Math.tan(fov / 2);
+    }
+
+    /**
+     * Calculate the resolution at the horizon
+     */
+    private horizonResolution() {
+        return this.resolution(this.map.horizon.distanceTo(this.map.renderer.camera.position));
+    }
+
+    /**
+     * Calculate the resolution at the given distance
+     */
+    private resolution(distance: number) {
+        const visibleHeight = this.resolutionRatio() * distance;
 
         return visibleHeight / this.map.renderer.clientHeight;
     }
 
     /**
      * Calculate the zoomlevel corrosponding to the input resolution
-     * @param res resolution
+     * @param resolution
      */
-    private calculateZoom(res: number) {
-        return this.map.projection.zoom(res);
+    private calculateZoom(resolution: number) {
+        return this.map.projection.zoom(resolution);
     }
 }

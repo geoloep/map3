@@ -1,4 +1,4 @@
-import { Vector2 } from 'three';
+import { Vector2, Vector3 } from 'three';
 import { Bounds } from '../geometry/basic';
 
 export default class RD {
@@ -31,14 +31,14 @@ export default class RD {
         return Math.log(resolution / this.zeroScale) / (Math.log(0.5));
     }
 
-    transform(point: Vector2) {
+    transform(point: Vector2 | Vector3) {
         return new Vector2(
             point.x - this.tileOrigin.x,
             this.tileOrigin.y - point.y,
         );
     }
 
-    untransform(point: Vector2) {
+    untransform(point: Vector2 | Vector3) {
         return new Vector2(
             point.x + this.tileOrigin.x,
             this.tileOrigin.y - point.y,

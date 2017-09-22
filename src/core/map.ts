@@ -9,7 +9,6 @@ import { ILayer } from '../layer/layer';
 
 import { Vector2, Vector3 } from 'three';
 
-
 export interface ICustomMapOptions {
     renderer?: Renderer;
     zoomstep?: number;

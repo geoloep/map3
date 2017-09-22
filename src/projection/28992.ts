@@ -1,8 +1,9 @@
-import { Bounds } from '../geometry/basic';
 import { Vector2 } from 'three';
+import { Bounds } from '../geometry/basic';
 
 export default class RD {
     tileSize = 256;
+    maxZoom = 14;
     // tileHeight = 256;
 
     // bounds = new Bounds(

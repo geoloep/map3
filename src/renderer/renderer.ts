@@ -1,4 +1,4 @@
-import {AmbientLight, Camera, Clock, DirectionalLight, Mesh, PerspectiveCamera, Plane, Raycaster, Scene, SphereBufferGeometry, Vector2, Vector3, WebGLRenderer} from 'three';
+import { AmbientLight, Camera, Clock, DirectionalLight, Mesh, PerspectiveCamera, Plane, Raycaster, Scene, SphereBufferGeometry, Vector2, Vector3, WebGLRenderer } from 'three';
 
 import { MapControls } from '../controls/mapControls';
 import Map from '../core/map';
@@ -100,6 +100,7 @@ export default class Renderer {
     }
 
     get bounds() {
+        let vector: Vector3;
         this.bottomLeft.set(Infinity, Infinity);
         this.topRight.set(-Infinity, -Infinity);
 
@@ -108,43 +109,31 @@ export default class Renderer {
 
             const point = this.boundRay.ray.intersectPlane(this.plane);
 
-            if (point === null) {
-                // what to do?
-            }  else {
+            if (point !== null) {
                 this.bottomLeft.set(Math.min(this.bottomLeft.x, point.x), Math.min(this.bottomLeft.y, point.y));
                 this.topRight.set(Math.max(this.topRight.x, point.x), Math.max(this.topRight.y, point.y));
+            } else {
+                // Ray did not cross plane, infinite bounds in the direction of the ray
+                vector = this.boundRay.ray.direction.normalize();
+
+                if (vector.x > 0) {
+                    this.topRight.setX(Infinity);
+                } else {
+                    this.bottomLeft.setX(-Infinity);
+                }
+
+                if (vector.y > 0) {
+                    this.topRight.setY(Infinity);
+                } else {
+                    this.bottomLeft.setY(-Infinity);
+                }
             }
         }
-
-        console.log(this.bottomLeft);
-        console.log(this.topRight);
 
         return new Bounds(
             this.bottomLeft,
             this.topRight,
         );
-
-        // const bottomLeftRay = new Raycaster();
-        // const topRightRay = new Raycaster();
-
-        // bottomLeftRay.setFromCamera(new Vector2(-1, -1), this.camera);
-        // topRightRay.setFromCamera(new Vector2(1, 1), this.camera);
-
-        // let bottomLeftVec = bottomLeftRay.ray.intersectPlane(this.plane);
-        // let topRightVec = topRightRay.ray.intersectPlane(this.plane);
-
-        // if (bottomLeftVec === null) {
-        //     bottomLeftVec = new Vector3(Infinity, Infinity, 0);
-        // }
-
-        // if (topRightVec === null) {
-        //     topRightVec = new Vector3(Infinity, Infinity, 0);
-        // }
-
-        // return new Bounds(
-        //     bottomLeftVec,
-        //     topRightVec,
-        // );
     }
 
     get horizon() {

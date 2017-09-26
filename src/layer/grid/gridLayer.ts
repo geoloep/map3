@@ -6,6 +6,7 @@ import Map from '../../core/map';
 
 import { Group, Vector2, Vector3 } from 'three';
 
+import { ITileDescriptor } from './gridUtil';
 import Tile from './tile';
 
 export interface ITileIndex {
@@ -49,13 +50,15 @@ export default class GridLayer implements ILayer {
         // this.createTiles();
     }
 
-    private createTile(position: Vector3) {
-        const scale = this.map.projection.resolution(position.z);
+    private createTile(description: ITileDescriptor) {
+        // const scale = this.map.projection.resolution(position.z);
 
-        const tileSize = this.map.projection.tileSize * scale;
-        const tileOrigin = this.map.projection.untransform(new Vector2(position.x, position.y).multiplyScalar(this.map.projection.tileSize).multiplyScalar(scale));
+        // const tileSize = this.map.projection.tileSize * scale;
+        // const tileOrigin = this.map.projection.untransform(new Vector2(position.x, position.y).multiplyScalar(this.map.projection.tileSize).multiplyScalar(scale));
 
-        const tile = new Tile(tileOrigin, tileSize, this.imageUrl(position));
+        console.log(description);
+
+        const tile = new Tile(description.pos, description.bounds, this.imageUrl(description.pos));
 
         tile.events.once('tileloaded', () => {
             this.events.emit('update');
@@ -63,7 +66,7 @@ export default class GridLayer implements ILayer {
 
         this.mesh.add(tile.mesh);
         this.tiles.push({
-            pos: position,
+            pos: description.pos,
             tile,
         });
     }
@@ -77,15 +80,15 @@ export default class GridLayer implements ILayer {
         this.events.emit('update');
     }
 
-    private addTiles(tiles: Vector3[]) {
+    private addTiles(tiles: ITileDescriptor[]) {
         let inCache: ITileIndex | undefined;
-        for (const position of tiles) {
-            inCache = this.tileInCache(position);
+        for (const tile of tiles) {
+            inCache = this.tileInCache(tile.pos);
 
             if (inCache) {
                 this.restoreTile(inCache);
             } else {
-                this.createTile(position);
+                this.createTile(tile);
             }
         }
     }
@@ -101,7 +104,7 @@ export default class GridLayer implements ILayer {
         }
     }
 
-    private compareTiles(target: Vector3[]) {
+    private compareTiles(target: ITileDescriptor[]) {
         const toAdd = target.filter((x) => {
             return !this.tileExists(x);
         });
@@ -110,7 +113,7 @@ export default class GridLayer implements ILayer {
 
         ex: for (const existing of this.tiles) {
             for (const n of target) {
-                if (existing.pos.equals(n)) {
+                if (existing.pos.equals(n.pos)) {
                     continue ex;
                 }
             }
@@ -121,9 +124,9 @@ export default class GridLayer implements ILayer {
         this.removeTiles(toRemove);
     }
 
-    private tileExists(tilePos: Vector3) {
+    private tileExists(tilePos: ITileDescriptor) {
         for (const existing of this.tiles) {
-            if (existing.pos.equals(tilePos)) {
+            if (existing.pos.equals(tilePos.pos)) {
                 return true;
             }
         }

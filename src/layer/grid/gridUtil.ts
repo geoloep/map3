@@ -7,10 +7,15 @@ import { Bounds } from '../../geometry/basic';
 
 import { Matrix3, Vector2, Vector3 } from 'three';
 
+export interface ITileDescriptor {
+    pos: Vector3;
+    bounds: Bounds;
+}
+
 export default class GridUtil {
     events = new EventEmitter();
 
-    private tiles: Vector3[] = [];
+    private tiles: ITileDescriptor[] = [];
     private newTiles: Vector3[] = [];
 
     private newTarget: Vector3 = new Vector3();
@@ -75,7 +80,6 @@ export default class GridUtil {
         const tileAtZoom = topLeftTile;
         let tileToSplit: Vector3;
 
-        this.tiles.splice(0);
         this.newTiles.splice(0);
         this.newTiles.push(startTile);
 
@@ -101,11 +105,18 @@ export default class GridUtil {
         let checkTile: Vector3;
         let resolution: number;
 
+        this.tiles.splice(0);
+
         // check all new tiles
         while (this.newTiles.length > 0) {
             checkTile = (this.newTiles.pop() as Vector3);
 
-            console.log(this.tileCenter(checkTile));
+            // console.log(this.tileCenter(checkTile));
+
+            this.tiles.push({
+                pos: checkTile,
+                bounds: this.calculateBounds(checkTile),
+            });
         }
 
         console.log(this.tiles.length);
@@ -115,10 +126,13 @@ export default class GridUtil {
     private pointToTilePos(point: Vector2, zoom: number, target: Vector3) {
         const scale = this.map.projection.resolution(zoom);
 
-        //
         const pos = point.clone().divideScalar(scale).divideScalar(this.map.projection.tileSize).floor();
 
         return target.set(pos.x, pos.y, zoom);
+    }
+
+    private tileToPoint(tile: Vector3) {
+        return this.map.projection.untransform(tile.clone().multiplyScalar(this.map.projection.tileSize).addScalar(0.5 * this.map.projection.tileSize).multiplyScalar(this.map.projection.resolution(tile.z)));
     }
 
     private tileSplit(tile: Vector3) {
@@ -151,14 +165,14 @@ export default class GridUtil {
      * Calculate the resolution at the horizon
      */
     private horizonResolution() {
-        return this.resolution(this.map.horizon.distanceTo(this.map.renderer.camera.position));
+        return this.resolution(this.resolutionRatio(), this.map.horizon.distanceTo(this.map.renderer.camera.position));
     }
 
     /**
      * Calculate the resolution at the given distance
      */
-    private resolution(distance: number) {
-        const visibleHeight = this.resolutionRatio() * distance;
+    private resolution(ratio: number, distance: number) {
+        const visibleHeight = ratio * distance;
 
         return visibleHeight / this.map.renderer.clientHeight;
     }
@@ -169,5 +183,17 @@ export default class GridUtil {
      */
     private calculateZoom(resolution: number) {
         return this.map.projection.zoom(resolution);
+    }
+
+    private calculateBounds(position: Vector3) {
+        const scale = this.map.projection.resolution(position.z);
+
+        const topLeft = this.map.projection.untransform(new Vector2(position.x, position.y).multiplyScalar(this.map.projection.tileSize).multiplyScalar(scale));
+        const bottomRight = new Vector2(topLeft.x + this.map.projection.tileSize * scale, topLeft.y - this.map.projection.tileSize * scale);
+
+        return new Bounds(
+            new Vector2(topLeft.x, bottomRight.y),
+            new Vector2(bottomRight.x, topLeft.y),
+        );
     }
 }

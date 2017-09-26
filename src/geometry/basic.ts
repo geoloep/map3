@@ -42,6 +42,18 @@ export class Bounds {
         return this.bottomLeft.y;
     }
 
+    get height() {
+        return this.topRight.x - this.bottomLeft.x;
+    }
+
+    get width() {
+        return this.topRight.y - this.bottomLeft.y;
+    }
+
+    get center() {
+        return this.bottomLeft.clone().add(new Vector2(this.width / 2, this.height / 2));
+    }
+
     clamp(otherBounds: Bounds) {
         return new Bounds(
             this.bottomLeft.clone().clamp(otherBounds.bottomLeft, otherBounds.topRight),

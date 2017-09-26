@@ -1,7 +1,9 @@
 import { EventEmitter } from 'eventemitter3';
 import { ILayer } from '../layer';
 
-import { Group, Mesh, MeshBasicMaterial, PlaneBufferGeometry, TextureLoader, Vector2 } from 'three';
+import { Bounds } from '../../geometry/basic';
+
+import { Group, Mesh, MeshBasicMaterial, PlaneBufferGeometry, TextureLoader, Vector2, Vector3 } from 'three';
 
 export default class Tile implements ILayer {
     events = new EventEmitter();
@@ -11,15 +13,19 @@ export default class Tile implements ILayer {
     private geom: PlaneBufferGeometry;
     private tileMesh: Mesh;
 
-    constructor(public origin: Vector2, public size: number, public image?: string) {
+    constructor(public position: Vector3, public bounds: Bounds, public image?: string) {
         this.constructTile();
     }
 
     private async constructTile() {
-        this.geom = new PlaneBufferGeometry(this.size, this.size);
+        this.geom = new PlaneBufferGeometry(this.bounds.width, this.bounds.height);
+        const center = this.bounds.center;
 
         // Move the top-left corner tot the origin vector
-        this.geom.translate(this.origin.x + this.size * 0.5, this.origin.y - this.size * 0.5, 0);
+        // this.geom.translate(this.origin.x + this.size * 0.5, this.origin.y - this.size * 0.5, 0);
+        // this.geom.translate(this.bounds.bottomLeft.x + this.bounds.width * 0.5, this.origin.y - this.size * 0.5, 0);
+        this.geom.translate(center.x, center.y, 0);
+        // this.geom.
 
         let material: MeshBasicMaterial | undefined;
 
@@ -28,6 +34,7 @@ export default class Tile implements ILayer {
         }
 
         this.tileMesh = new Mesh(this.geom, material);
+        // this.tileMesh.position.set(center.x, center.y, 0);
         this.mesh.add(this.tileMesh);
 
         this.events.emit('tileloaded');

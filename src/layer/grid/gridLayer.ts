@@ -56,7 +56,7 @@ export default class GridLayer implements ILayer {
         // const tileSize = this.map.projection.tileSize * scale;
         // const tileOrigin = this.map.projection.untransform(new Vector2(position.x, position.y).multiplyScalar(this.map.projection.tileSize).multiplyScalar(scale));
 
-        console.log(description);
+        // console.log(description);
 
         const tile = new Tile(description.pos, description.bounds, this.imageUrl(description.pos));
 

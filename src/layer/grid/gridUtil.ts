@@ -103,7 +103,12 @@ export default class GridUtil {
         }
 
         let checkTile: Vector3;
+        let distance: number;
         let resolution: number;
+        let center: Vector2;
+        let tileBounds: Bounds;
+        const center3 = new Vector3();
+        const ratio = this.resolutionRatio();
 
         this.tiles.splice(0);
 
@@ -111,12 +116,26 @@ export default class GridUtil {
         while (this.newTiles.length > 0) {
             checkTile = (this.newTiles.pop() as Vector3);
 
-            // console.log(this.tileCenter(checkTile));
+            center = this.tileToPoint(checkTile);
+            center3.set(center.x, center.y, 0);
 
-            this.tiles.push({
-                pos: checkTile,
-                bounds: this.calculateBounds(checkTile),
-            });
+            distance = this.map.renderer.camera.position.distanceTo(center3);
+
+            if (this.map.projection.zoom(this.resolution(ratio, distance)) > checkTile.z) {
+                console.log(this.map.projection.zoom(this.resolution(ratio, distance)), checkTile.z);
+                for (const t of this.tileSplit(checkTile)) {
+                    this.newTiles.push(t);
+                }
+            } else {
+                tileBounds = this.calculateBounds(checkTile);
+
+                if (bounds.intersects(tileBounds)) {
+                    this.tiles.push({
+                        pos: checkTile,
+                        bounds: tileBounds,
+                    });
+                }
+            }
         }
 
         console.log(this.tiles.length);
@@ -131,6 +150,10 @@ export default class GridUtil {
         return target.set(pos.x, pos.y, zoom);
     }
 
+    /**
+     * Return the center coordinates of the tile in untransformed(!) space
+     * @param tile 
+     */
     private tileToPoint(tile: Vector3) {
         return this.map.projection.untransform(tile.clone().multiplyScalar(this.map.projection.tileSize).addScalar(0.5 * this.map.projection.tileSize).multiplyScalar(this.map.projection.resolution(tile.z)));
     }
@@ -146,11 +169,6 @@ export default class GridUtil {
         }
 
         return children;
-    }
-
-    private tileCenter(tile: Vector3) {
-        const scale = this.map.projection.resolution(tile.z);
-        return this.map.projection.untransform(tile.clone().multiplyScalar(this.map.projection.tileSize).multiplyScalar(scale)).addScalar(this.map.projection.tileSize * tile.z);
     }
 
     /**

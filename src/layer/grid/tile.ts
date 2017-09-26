@@ -33,7 +33,7 @@ export default class Tile implements ILayer {
             material = await this.imageMaterial(this.image);
         }
 
-        this.tileMesh = new Mesh(this.geom, material);
+        this.tileMesh = new Mesh(this.geom, undefined);
         // this.tileMesh.position.set(center.x, center.y, 0);
         this.mesh.add(this.tileMesh);
 

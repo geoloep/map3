@@ -64,4 +64,9 @@ export class Bounds {
     contains(point: Vector2) {
         return point.x >= this.bottomLeft.x && point.x <= this.topRight.x && point.y >= this.bottomLeft.y && point.y <= this.topRight.y;
     }
+
+    intersects(other: Bounds) {
+        // return (other.left > this.left && this.left < other.right) || (other.left < this.right && this.right) || (other.bottom < this.bottom && other.bottom < this.top) || (other.top > this.bottom)
+        return ((other.left < this.right && other.left > this.left) || (other.right > this.left && other.right < this.right)) && ((other.top > this.bottom && other.top < this.top) || (other.bottom < this.top && other.bottom > this.bottom));
+    }
 }

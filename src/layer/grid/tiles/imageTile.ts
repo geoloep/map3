@@ -1,4 +1,4 @@
-import Evented from '../../../core/evented';
+import DebugTile from './debugTile';
 
 import { EventEmitter } from 'eventemitter3';
 import { ILayer } from '../../layer';
@@ -7,27 +7,18 @@ import { Bounds } from '../../../geometry/basic';
 
 import { Group, Mesh, MeshBasicMaterial, PlaneBufferGeometry, TextureLoader, Vector2, Vector3 } from 'three';
 
-export default class Tile extends Evented {
-    mesh = new Group();
+export default class Tile extends DebugTile implements ILayer {
 
-    private geom: PlaneBufferGeometry;
-    private tileMesh: Mesh;
-
-    constructor(public position: Vector3, public bounds: Bounds, public image?: string) {
-        super();
-
-        this.constructTile();
+    constructor(public position: Vector3, public bounds: Bounds, zIndex: number, public image?: string) {
+        super(position, bounds, zIndex);
     }
 
-    private async constructTile() {
+    async construct() {
         this.geom = new PlaneBufferGeometry(this.bounds.width, this.bounds.height);
         const center = this.bounds.center;
 
         // Move the top-left corner tot the origin vector
-        // this.geom.translate(this.origin.x + this.size * 0.5, this.origin.y - this.size * 0.5, 0);
-        // this.geom.translate(this.bounds.bottomLeft.x + this.bounds.width * 0.5, this.origin.y - this.size * 0.5, 0);
         this.geom.translate(center.x, center.y, 0);
-        // this.geom.
 
         let material: MeshBasicMaterial | undefined;
 
@@ -35,8 +26,8 @@ export default class Tile extends Evented {
             material = await this.imageMaterial(this.image);
         }
 
-        this.tileMesh = new Mesh(this.geom, undefined);
-        // this.tileMesh.position.set(center.x, center.y, 0);
+        this.tileMesh = new Mesh(this.geom, material);
+
         this.mesh.add(this.tileMesh);
 
         this.emit('tileloaded');

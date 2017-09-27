@@ -53,7 +53,7 @@ export default class Map extends Evented {
 
         layer.onAdd(this);
 
-        layer.events.on('update', () => {
+        layer.on('update', () => {
             this.renderer.render();
         });
 

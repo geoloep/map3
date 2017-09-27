@@ -85,7 +85,7 @@ export default class Renderer {
         //     // sp.position.copy(controls.panStart);
         // };
 
-        controls.events.on('move', () => {
+        controls.on('move', () => {
             this.redraw = true;
         });
 

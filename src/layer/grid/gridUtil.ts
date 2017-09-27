@@ -1,3 +1,5 @@
+import Evented from '../../core/evented';
+
 import Map from '../../core/map';
 import Projection from '../../projection/28992';
 
@@ -12,9 +14,7 @@ export interface ITileDescriptor {
     bounds: Bounds;
 }
 
-export default class GridUtil {
-    events = new EventEmitter();
-
+export default class GridUtil extends Evented {
     private tiles: ITileDescriptor[] = [];
     private newTiles: Vector3[] = [];
 
@@ -34,13 +34,10 @@ export default class GridUtil {
     ];
 
     constructor(readonly map: Map) {
-        this.map.events.on('moveend', () => {
+        super();
+
+        this.map.on('moveend', () => {
             this.calculateTiles();
-            const res = this.horizonResolution();
-
-            // const zoom = this.map.projection.zoom(res);
-
-            console.log(res);
         });
     }
 
@@ -104,7 +101,6 @@ export default class GridUtil {
 
         let checkTile: Vector3;
         let distance: number;
-        let resolution: number;
         let center: Vector2;
         let tileBounds: Bounds;
         const center3 = new Vector3();
@@ -115,21 +111,22 @@ export default class GridUtil {
         // check all new tiles
         while (this.newTiles.length > 0) {
             checkTile = (this.newTiles.pop() as Vector3);
+            tileBounds = this.calculateBounds(checkTile);
 
-            center = this.tileToPoint(checkTile);
-            center3.set(center.x, center.y, 0);
+            // Discard if outside bounds
+            if (bounds.intersects(tileBounds)) {
+                center = this.tileToPoint(checkTile);
+                center3.set(center.x, center.y, 0);
 
-            distance = this.map.renderer.camera.position.distanceTo(center3);
+                distance = this.map.renderer.camera.position.distanceTo(center3);
 
-            if (this.map.projection.zoom(this.resolution(ratio, distance)) > checkTile.z) {
-                console.log(this.map.projection.zoom(this.resolution(ratio, distance)), checkTile.z);
-                for (const t of this.tileSplit(checkTile)) {
-                    this.newTiles.push(t);
-                }
-            } else {
-                tileBounds = this.calculateBounds(checkTile);
-
-                if (bounds.intersects(tileBounds)) {
+                if (this.map.projection.zoom(this.resolution(ratio, distance)) > checkTile.z) {
+                    // Split tile if it's to close to the camera
+                    for (const t of this.tileSplit(checkTile)) {
+                        this.newTiles.push(t);
+                    }
+                } else {
+                    // We can push the tile to the final stack
                     this.tiles.push({
                         pos: checkTile,
                         bounds: tileBounds,
@@ -139,7 +136,7 @@ export default class GridUtil {
         }
 
         console.log(this.tiles.length);
-        this.events.emit('renew');
+        this.emit('renew');
     }
 
     private pointToTilePos(point: Vector2, zoom: number, target: Vector3) {
@@ -152,7 +149,7 @@ export default class GridUtil {
 
     /**
      * Return the center coordinates of the tile in untransformed(!) space
-     * @param tile 
+     * @param tile
      */
     private tileToPoint(tile: Vector3) {
         return this.map.projection.untransform(tile.clone().multiplyScalar(this.map.projection.tileSize).addScalar(0.5 * this.map.projection.tileSize).multiplyScalar(this.map.projection.resolution(tile.z)));

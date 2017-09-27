@@ -1,7 +1,7 @@
 import { EventEmitter } from 'eventemitter3';
 
 export default class Evented {
-    events = new EventEmitter();
+    private events = new EventEmitter();
 
     on = (event: string | symbol, fn: EventEmitter.ListenerFn, context?: any): EventEmitter => {
         return this.events.on(event, fn, context);

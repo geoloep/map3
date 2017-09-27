@@ -11,7 +11,11 @@ import Tile from './tiles/debugTile';
 
 export interface ITileIndex {
     pos: Vector3;
-    tile: Tile;
+    tile: ILayer;
+}
+
+export interface IGridLayerCustomOptions {
+    zIndex?: number;
 }
 
 export default class GridLayer extends Evented implements ILayer {
@@ -19,12 +23,17 @@ export default class GridLayer extends Evented implements ILayer {
 
     mesh = new Group();
 
-    private tiles: ITileIndex[] = [];
+    protected tiles: ITileIndex[] = [];
+    protected tilesLoading: ITileIndex[] = [];
 
-    private cacheLimit = 100;
-    private tileCache: ITileIndex[] = [];
+    protected cacheLimit = 100;
+    protected tileCache: ITileIndex[] = [];
 
-    constructor(readonly urlTemplate: string) {
+    protected options = {
+        zIndex: 0,
+    };
+
+    constructor(options?: IGridLayerCustomOptions) {
         super();
     }
 
@@ -37,24 +46,42 @@ export default class GridLayer extends Evented implements ILayer {
     onAdd(map: Map) {
         this.map = map;
 
-        this.map.gridUtil.events.on('renew', () => {
+        this.map.gridUtil.on('renew', () => {
             this.createTiles();
         });
 
     }
 
+    get zIndex() {
+        return this.options.zIndex;
+    }
+
+    set zIndex(zIndex: number) {
+        this.options.zIndex = zIndex;
+    }
+
+    protected constructTile(description: ITileDescriptor) {
+        return new Tile(description.pos, description.bounds, this.options.zIndex + 1);
+    }
+
     private createTile(description: ITileDescriptor) {
-        const tile = new Tile(description.pos, description.bounds, this.imageUrl(description.pos));
+        const tile = this.constructTile(description);
 
-        tile.events.once('tileloaded', () => {
-            this.emit('update');
-        });
-
-        this.mesh.add(tile.mesh);
-        this.tiles.push({
+        const tileIndex = {
             pos: description.pos,
             tile,
+        };
+
+        this.tilesLoading.push(tileIndex);
+        this.mesh.add(tile.mesh);
+
+        tile.once('tileloaded', () => {
+            this.emit('update');
+
+            this.tiles.push(this.tilesLoading.splice(this.tilesLoading.indexOf(tileIndex), 1)[0]);
         });
+
+        tile.construct();
     }
 
     private restoreTile(tile: ITileIndex) {
@@ -125,9 +152,5 @@ export default class GridLayer extends Evented implements ILayer {
                 return existing;
             }
         }
-    }
-
-    private imageUrl(position: Vector3) {
-        return this.urlTemplate.replace('{x}', position.x.toString(10)).replace('{y}', position.y.toString(10)).replace('{z}', position.z.toString(10));
     }
 }

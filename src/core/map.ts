@@ -1,4 +1,4 @@
-import { EventEmitter } from 'eventemitter3';
+import Evented from './evented';
 
 import CRS from '../projection/28992';
 import Renderer from '../renderer/renderer';
@@ -23,9 +23,7 @@ const defaultOptions = {
     zoomstep: 0.25,
 };
 
-export default class Map {
-    events = new EventEmitter();
-
+export default class Map extends Evented {
     options: IMapOptions = (defaultOptions as IMapOptions);
 
     renderer: Renderer;
@@ -36,6 +34,8 @@ export default class Map {
     private layers: any[] = [];
 
     constructor(container: string, options?: ICustomMapOptions) {
+        super();
+
         const element: HTMLElement | null = document.getElementById(container);
 
         if (element !== null) {
@@ -87,7 +87,7 @@ export default class Map {
 
         for (const event of cloneEvents) {
             this.renderer.controls.events.on(event, () => {
-                this.events.emit(event);
+                this.emit(event);
             });
         }
     }

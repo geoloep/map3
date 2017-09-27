@@ -1,3 +1,5 @@
+// import Evented from '../core/evented';
+
 import { AmbientLight, Camera, Clock, DirectionalLight, Mesh, PerspectiveCamera, Plane, Raycaster, Scene, SphereBufferGeometry, Vector2, Vector3, WebGLRenderer } from 'three';
 
 import { MapControls } from '../controls/mapControls';
@@ -26,6 +28,8 @@ export default class Renderer {
     ];
     private bottomLeft = new Vector2(Infinity, Infinity);
     private topRight = new Vector2(-Infinity, -Infinity);
+
+    private redraw = true;
 
     constructor(readonly map: Map, readonly container: HTMLElement) {
         const camera = this.camera = new PerspectiveCamera(60, container.clientWidth / container.clientHeight, 1, 20000000);
@@ -82,23 +86,32 @@ export default class Renderer {
         // };
 
         controls.events.on('move', () => {
-            this.render();
+            this.redraw = true;
         });
 
-        this.render();
+        // this.render();
+        this.animate();
     }
 
-    animate = () => {
-        requestAnimationFrame(this.render);
-
-        this.render();
+    /**
+     * Request that the map be redrawn
+     */
+    render() {
+        this.redraw = true;
     }
 
-    render = () => {
-        // this.controls.update();
+    private animate = () => {
+        if (this.redraw) {
+            this.renderFrame();
+            this.redraw = false;
+        }
+
+        requestAnimationFrame(this.animate);
+    }
+
+    private renderFrame = () => {
         this.renderer.render(this.scene, this.camera);
     }
-
     get bounds() {
         let vector: Vector3;
         this.bottomLeft.set(Infinity, Infinity);

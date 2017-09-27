@@ -1,19 +1,21 @@
-import { EventEmitter } from 'eventemitter3';
-import { ILayer } from '../layer';
+import Evented from '../../../core/evented';
 
-import { Bounds } from '../../geometry/basic';
+import { EventEmitter } from 'eventemitter3';
+import { ILayer } from '../../layer';
+
+import { Bounds } from '../../../geometry/basic';
 
 import { Group, Mesh, MeshBasicMaterial, PlaneBufferGeometry, TextureLoader, Vector2, Vector3 } from 'three';
 
-export default class Tile implements ILayer {
-    events = new EventEmitter();
-
+export default class Tile extends Evented {
     mesh = new Group();
 
     private geom: PlaneBufferGeometry;
     private tileMesh: Mesh;
 
     constructor(public position: Vector3, public bounds: Bounds, public image?: string) {
+        super();
+
         this.constructTile();
     }
 
@@ -37,7 +39,7 @@ export default class Tile implements ILayer {
         // this.tileMesh.position.set(center.x, center.y, 0);
         this.mesh.add(this.tileMesh);
 
-        this.events.emit('tileloaded');
+        this.emit('tileloaded');
     }
 
     private async imageMaterial(path: string) {
@@ -48,12 +50,10 @@ export default class Tile implements ILayer {
             loader.load(path, (texture) => {
                 resolve (new MeshBasicMaterial({
                     map: texture,
+                    polygonOffset: true,
+                    polygonOffsetFactor: 0.5,
                 }));
             });
         });
-    }
-
-    onAdd() {
-
     }
 }

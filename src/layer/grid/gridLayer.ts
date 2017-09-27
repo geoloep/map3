@@ -1,4 +1,4 @@
-import { EventEmitter } from 'eventemitter3';
+import Evented from '../../core/evented';
 
 import { ILayer } from '../layer';
 
@@ -7,30 +7,25 @@ import Map from '../../core/map';
 import { Group, Vector2, Vector3 } from 'three';
 
 import { ITileDescriptor } from './gridUtil';
-import Tile from './tile';
+import Tile from './tiles/debugTile';
 
 export interface ITileIndex {
     pos: Vector3;
     tile: Tile;
 }
 
-export default class GridLayer implements ILayer {
-    events = new EventEmitter();
-
+export default class GridLayer extends Evented implements ILayer {
     map: Map;
 
     mesh = new Group();
 
-    // private tiles: {[index: number]: {[index: number]: {[index: number]: Tile}}};
     private tiles: ITileIndex[] = [];
 
     private cacheLimit = 100;
     private tileCache: ITileIndex[] = [];
 
     constructor(readonly urlTemplate: string) {
-        // const geom = new PlaneBufferGeometry(100000, 100000);
-
-        // geom.translate(142892.19, 470783.87, 0);
+        super();
     }
 
     createTiles() {
@@ -42,26 +37,17 @@ export default class GridLayer implements ILayer {
     onAdd(map: Map) {
         this.map = map;
 
-        // this.createTiles(8);
         this.map.gridUtil.events.on('renew', () => {
             this.createTiles();
         });
 
-        // this.createTiles();
     }
 
     private createTile(description: ITileDescriptor) {
-        // const scale = this.map.projection.resolution(position.z);
-
-        // const tileSize = this.map.projection.tileSize * scale;
-        // const tileOrigin = this.map.projection.untransform(new Vector2(position.x, position.y).multiplyScalar(this.map.projection.tileSize).multiplyScalar(scale));
-
-        // console.log(description);
-
         const tile = new Tile(description.pos, description.bounds, this.imageUrl(description.pos));
 
         tile.events.once('tileloaded', () => {
-            this.events.emit('update');
+            this.emit('update');
         });
 
         this.mesh.add(tile.mesh);
@@ -77,7 +63,7 @@ export default class GridLayer implements ILayer {
         this.mesh.add(tile.tile.mesh);
         this.tiles.push(tile);
 
-        this.events.emit('update');
+        this.emit('update');
     }
 
     private addTiles(tiles: ITileDescriptor[]) {

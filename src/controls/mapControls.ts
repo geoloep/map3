@@ -1,4 +1,5 @@
-// import THREE from 'three';
+import Evented from '../core/evented';
+
 import Map from '../core/map';
 
 import { EventEmitter } from 'eventemitter3';
@@ -12,9 +13,7 @@ import { Camera, Plane, Quaternion, Raycaster, Spherical, Vector2, Vector3, WebG
 /**
  * Controls for a Google maps like panning and rotating experience
  */
-export class MapControls {
-    events = new EventEmitter();
-
+export class MapControls extends Evented {
     target = new Vector3();
 
     bounds: {
@@ -65,6 +64,8 @@ export class MapControls {
     offset = new Vector3();
 
     constructor(private map: Map, private camera: Camera, private renderer: WebGLRenderer, private plane: Plane) {
+        super();
+
         this.bounds = renderer.domElement.getBoundingClientRect();
 
         renderer.domElement.addEventListener('contextmenu', (e: Event) => {
@@ -212,42 +213,42 @@ export class MapControls {
 
         // console.log(this.camera.position);
 
-        this.events.emit('move');
+        this.emit('move');
     }
 
     private startPan() {
         this.panStart.copy(this.raycast(this.mousePosition));
         this.panning = true;
 
-        this.events.emit('panstart');
-        this.events.emit('movestart');
+        this.emit('panstart');
+        this.emit('movestart');
     }
 
     private stopPan() {
         this.panning = false;
 
-        this.events.emit('panend');
-        this.events.emit('moveend');
+        this.emit('panend');
+        this.emit('moveend');
     }
 
     private startZoom() {
         this.zoomStart.copy(this.mousePosition);
         this.zooming = true;
 
-        this.events.emit('zoomstart');
-        this.events.emit('movestart');
+        this.emit('zoomstart');
+        this.emit('movestart');
     }
 
     private stopZoom() {
         this.zooming = false;
 
-        this.events.emit('zoomend');
-        this.events.emit('moveend');
+        this.emit('zoomend');
+        this.emit('moveend');
     }
 
     private zoomIn(e: WheelEvent) {
-        this.events.emit('zoomstart');
-        this.events.emit('movestart');
+        this.emit('zoomstart');
+        this.emit('movestart');
 
         this.zoomLevel += this.map.options.zoomstep;
 
@@ -261,13 +262,13 @@ export class MapControls {
 
         this.update();
 
-        this.events.emit('zoomend');
-        this.events.emit('moveend');
+        this.emit('zoomend');
+        this.emit('moveend');
     }
 
     private zoomOut(e: WheelEvent) {
-        this.events.emit('zoomstart');
-        this.events.emit('movestart');
+        this.emit('zoomstart');
+        this.emit('movestart');
 
         this.zoomLevel -= this.map.options.zoomstep;
 
@@ -281,8 +282,8 @@ export class MapControls {
 
         this.update();
 
-        this.events.emit('zoomend');
-        this.events.emit('moveend');
+        this.emit('zoomend');
+        this.emit('moveend');
     }
 
     private startRotate() {
@@ -290,15 +291,15 @@ export class MapControls {
         this.rotateStart.copy(this.spherical);
         this.rotateMouseStart.copy(this.mousePosition);
 
-        this.events.emit('rotatestart');
-        this.events.emit('movestart');
+        this.emit('rotatestart');
+        this.emit('movestart');
     }
 
     private stopRotate() {
         this.rotating = false;
 
-        this.events.emit('rotateend');
-        this.events.emit('moveend');
+        this.emit('rotateend');
+        this.emit('moveend');
     }
 
     private rotate() {

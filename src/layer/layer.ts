@@ -1,11 +1,10 @@
-import { EventEmitter } from 'eventemitter3';
 import { Mesh } from 'three';
+
+import Evented from '../core/evented';
 
 import Map from '../core/map';
 
-export interface ILayer {
-    events: EventEmitter;
-
+export interface ILayer extends Evented {
     mesh: any;
 
     onAdd(map: Map): void;

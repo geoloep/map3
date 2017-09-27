@@ -61,7 +61,7 @@ export default class GridLayer extends Evented implements ILayer {
     }
 
     protected constructTile(description: ITileDescriptor) {
-        return new Tile(description.pos, description.bounds, this.options.zIndex + 1);
+        return new Tile(description.pos, description.bounds, this.options.zIndex + 1000);
     }
 
     private createTile(description: ITileDescriptor) {
@@ -81,29 +81,34 @@ export default class GridLayer extends Evented implements ILayer {
             this.tiles.push(this.tilesLoading.splice(this.tilesLoading.indexOf(tileIndex), 1)[0]);
         });
 
-        tile.construct();
+        return tile.construct();
     }
 
     private restoreTile(tile: ITileIndex) {
         this.tileCache.splice(this.tileCache.indexOf(tile), 1);
 
+        tile.tile.zIndex = this.zIndex + 1000;
         this.mesh.add(tile.tile.mesh);
         this.tiles.push(tile);
 
         this.emit('update');
     }
 
-    private addTiles(tiles: ITileDescriptor[]) {
+    private async addTiles(tiles: ITileDescriptor[]) {
         let inCache: ITileIndex | undefined;
+        const constructors: Array<Promise<void>> = [];
+
         for (const tile of tiles) {
             inCache = this.tileInCache(tile.pos);
 
             if (inCache) {
                 this.restoreTile(inCache);
             } else {
-                this.createTile(tile);
+                constructors.push(this.createTile(tile));
             }
         }
+
+        await Promise.all(constructors);
     }
 
     private removeTiles(tiles: ITileIndex[]) {
@@ -117,7 +122,13 @@ export default class GridLayer extends Evented implements ILayer {
         }
     }
 
-    private compareTiles(target: ITileDescriptor[]) {
+    private lowerTiles(tiles: ITileIndex[]) {
+        for (const tile of tiles) {
+            tile.tile.zIndex = this.options.zIndex;
+        }
+    }
+
+    private async compareTiles(target: ITileDescriptor[]) {
         const toAdd = target.filter((x) => {
             return !this.tileExists(x);
         });
@@ -133,7 +144,8 @@ export default class GridLayer extends Evented implements ILayer {
             toRemove.push(existing);
         }
 
-        this.addTiles(toAdd);
+        this.lowerTiles(toRemove);
+        await this.addTiles(toAdd);
         this.removeTiles(toRemove);
     }
 

@@ -13,7 +13,7 @@ import { Camera, Plane, Quaternion, Raycaster, Spherical, Vector2, Vector3, WebG
 /**
  * Controls for a Google maps like panning and rotating experience
  */
-export class MapControls extends Evented {
+export default class MapControls extends Evented {
     target = new Vector3();
 
     bounds: {
@@ -63,8 +63,16 @@ export class MapControls extends Evented {
     spherical = new Spherical();
     offset = new Vector3();
 
-    constructor(private map: Map, private camera: Camera, private renderer: WebGLRenderer, private plane: Plane) {
+    private plane: Plane;
+    private renderer: WebGLRenderer;
+    private camera: Camera;
+
+    constructor(private map: Map/*, private camera: Camera, private renderer: WebGLRenderer, private plane: Plane*/) {
         super();
+
+        const renderer = this.renderer = map.renderer.renderer;
+        const camera = this.camera = map.renderer.camera;
+        this.plane = map.renderer.plane;
 
         this.bounds = renderer.domElement.getBoundingClientRect();
 
@@ -87,7 +95,8 @@ export class MapControls extends Evented {
 
         this.target.set(camera.position.x, camera.position.y, 0);
 
-        window.requestAnimationFrame(this.animate);
+        // window.requestAnimationFrame(this.animate);
+        this.map.renderer.on('tick', this.animate);
     }
 
     private onMouseMove = (e: MouseEvent) => {
@@ -193,7 +202,7 @@ export class MapControls extends Evented {
             this.zoom();
         }
 
-        window.requestAnimationFrame(this.animate);
+        // window.requestAnimationFrame(this.animate);
     }
 
     private update() {
@@ -213,7 +222,8 @@ export class MapControls extends Evented {
 
         // console.log(this.camera.position);
 
-        this.emit('move');
+        // this.emit('move');
+        this.map.renderer.render();
     }
 
     private startPan() {
@@ -262,8 +272,10 @@ export class MapControls extends Evented {
 
         this.update();
 
-        this.emit('zoomend');
-        this.emit('moveend');
+        this.map.renderer.once('frame', () => {
+            this.emit('zoomend');
+            this.emit('moveend');
+        });
     }
 
     private zoomOut(e: WheelEvent) {
@@ -282,8 +294,10 @@ export class MapControls extends Evented {
 
         this.update();
 
-        this.emit('zoomend');
-        this.emit('moveend');
+        this.map.renderer.once('frame', () => {
+            this.emit('zoomend');
+            this.emit('moveend');
+        });
     }
 
     private startRotate() {

@@ -42,7 +42,7 @@ export default class Tile extends DebugTile implements ILayer {
                 resolve (new MeshBasicMaterial({
                     map: texture,
                     polygonOffset: true,
-                    polygonOffsetFactor: -10,
+                    polygonOffsetFactor: -1,
                     polygonOffsetUnits: this.zIndex,
                 }));
             });

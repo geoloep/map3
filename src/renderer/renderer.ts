@@ -1,12 +1,11 @@
-// import Evented from '../core/evented';
+import Evented from '../core/evented';
 
 import { AmbientLight, Camera, Clock, DirectionalLight, Mesh, PerspectiveCamera, Plane, Raycaster, Scene, SphereBufferGeometry, Vector2, Vector3, WebGLRenderer } from 'three';
 
-import { MapControls } from '../controls/mapControls';
 import Map from '../core/map';
 import { Bounds } from '../geometry/basic';
 
-export default class Renderer {
+export default class Renderer extends Evented {
     // events = new EventEmitter();
 
     renderer: WebGLRenderer;
@@ -32,6 +31,8 @@ export default class Renderer {
     private redraw = true;
 
     constructor(readonly map: Map, readonly container: HTMLElement) {
+        super();
+
         const camera = this.camera = new PerspectiveCamera(60, container.clientWidth / container.clientHeight, 1, 20000000);
         const scene = this.scene = new Scene();
 
@@ -67,7 +68,7 @@ export default class Renderer {
 
         const plane = this.plane = new Plane(new Vector3(0, 0, 1));
 
-        const controls = this.controls = new MapControls(map, camera, renderer, plane);
+        // const controls = this.controls = new MapControls(map, camera, renderer, plane);
 
         // const sg = new SphereBufferGeometry(20000, 32, 32);
         // const sp = new Mesh(sg);
@@ -85,9 +86,9 @@ export default class Renderer {
         //     // sp.position.copy(controls.panStart);
         // };
 
-        controls.on('move', () => {
-            this.redraw = true;
-        });
+        // controls.on('move', () => {
+        //     this.redraw = true;
+        // });
 
         // this.render();
         this.animate();
@@ -101,6 +102,8 @@ export default class Renderer {
     }
 
     private animate = () => {
+        this.emit('tick');
+
         if (this.redraw) {
             this.renderFrame();
             this.redraw = false;
@@ -111,7 +114,9 @@ export default class Renderer {
 
     private renderFrame = () => {
         this.renderer.render(this.scene, this.camera);
+        this.emit('frame');
     }
+
     get bounds() {
         let vector: Vector3;
         this.bottomLeft.set(Infinity, Infinity);

@@ -25,6 +25,7 @@ export default class GridLayer extends Evented implements ILayer {
 
     protected tiles: ITileIndex[] = [];
     protected tilesLoading: ITileIndex[] = [];
+    protected tilesDeleting: ITileIndex[] = [];
 
     protected cacheLimit = 100;
     protected tileCache: ITileIndex[] = [];
@@ -47,6 +48,7 @@ export default class GridLayer extends Evented implements ILayer {
         this.map = map;
 
         this.map.gridUtil.on('renew', () => {
+            this.purgeTiles();
             this.createTiles();
         });
 
@@ -61,7 +63,7 @@ export default class GridLayer extends Evented implements ILayer {
     }
 
     protected constructTile(description: ITileDescriptor) {
-        return new Tile(description.pos, description.bounds, this.options.zIndex + 1000);
+        return new Tile(description.pos, description.bounds, this.options.zIndex + 1);
     }
 
     private createTile(description: ITileDescriptor) {
@@ -87,7 +89,7 @@ export default class GridLayer extends Evented implements ILayer {
     private restoreTile(tile: ITileIndex) {
         this.tileCache.splice(this.tileCache.indexOf(tile), 1);
 
-        tile.tile.zIndex = this.zIndex + 1000;
+        tile.tile.zIndex = this.zIndex + 1;
         this.mesh.add(tile.tile.mesh);
         this.tiles.push(tile);
 
@@ -111,20 +113,48 @@ export default class GridLayer extends Evented implements ILayer {
         await Promise.all(constructors);
     }
 
-    private removeTiles(tiles: ITileIndex[]) {
-        for (const tile of tiles) {
-            this.mesh.remove(tile.tile.mesh);
-            this.tileCache.push(this.tiles.splice(this.tiles.indexOf(tile), 1)[0]);
-        }
+    private purgeTiles() {
+        // for (const tile of tiles) {
+        //     this.mesh.remove(tile.tile.mesh);
+        //     this.tileCache.push(this.tiles.splice(this.tiles.indexOf(tile), 1)[0]);
+        // }
 
-        if (this.tileCache.length > this.cacheLimit) {
-            this.tileCache.splice(0, this.tileCache.length - this.cacheLimit);
+        // if (this.tileCache.length > this.cacheLimit) {
+        //     this.tileCache.splice(0, this.tileCache.length - this.cacheLimit);
+        // }
+
+        // for (const tile of this.tilesDeleting) {
+        //     this.mesh.remove(tile.tile.mesh);
+
+        // }
+        let tile: ITileIndex;
+
+        while (this.tilesDeleting.length > 0) {
+            tile = (this.tilesDeleting.pop() as ITileIndex);
+
+            this.mesh.remove(tile.tile.mesh);
+            this.emit('update');
+
+            this.tileCache.push(tile);
         }
     }
 
-    private lowerTiles(tiles: ITileIndex[]) {
+    private truncateCache() {
+        for (const tile of this.tilesDeleting) {
+            this.mesh.remove(tile.tile.mesh);
+
+        }
+    }
+
+    /**
+     * Tag tiles to be removed
+     * @param tiles
+     */
+    private removeTiles(tiles: ITileIndex[]) {
         for (const tile of tiles) {
             tile.tile.zIndex = this.options.zIndex;
+
+            this.tilesDeleting.push(this.tiles.splice(this.tiles.indexOf(tile), 1)[0]);
         }
     }
 
@@ -144,9 +174,10 @@ export default class GridLayer extends Evented implements ILayer {
             toRemove.push(existing);
         }
 
-        this.lowerTiles(toRemove);
-        await this.addTiles(toAdd);
         this.removeTiles(toRemove);
+        await this.addTiles(toAdd);
+        this.purgeTiles();
+        this.truncateCache();
     }
 
     private tileExists(tilePos: ITileDescriptor) {

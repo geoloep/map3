@@ -50,6 +50,7 @@ export default class GridUtil extends Evented {
         let j: number;
 
         const bounds = this.map.bounds.clamp(this.map.projection.bounds);
+        console.log(bounds);
 
         // Create bounds in transfomed space
         const transformedBounds = new Bounds(

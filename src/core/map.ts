@@ -1,5 +1,6 @@
 import Evented from './evented';
 
+import MapControls from '../controls/mapControls';
 import CRS from '../projection/28992';
 import Renderer from '../renderer/renderer';
 
@@ -14,19 +15,24 @@ export interface ICustomMapOptions {
     zoomstep?: number;
 }
 
-export interface IMapOptions {
-    renderer: Renderer;
-    zoomstep: number;
-}
+// export interface IMapOptions {
+//     controls: MapControls;
+//     renderer: Renderer;
+//     zoomstep: number;
+// }
 
 const defaultOptions = {
     zoomstep: 0.25,
+    renderer: Renderer,
+    controls: MapControls,
 };
 
 export default class Map extends Evented {
-    options: IMapOptions = (defaultOptions as IMapOptions);
+    options = defaultOptions;
 
     renderer: Renderer;
+    controls: MapControls;
+
     projection = new CRS();
 
     gridUtil = new GridUtil(this);
@@ -36,6 +42,10 @@ export default class Map extends Evented {
     constructor(container: string, options?: ICustomMapOptions) {
         super();
 
+        if (options) {
+            Object.assign(this.options, options);
+        }
+
         const element: HTMLElement | null = document.getElementById(container);
 
         if (element !== null) {
@@ -44,7 +54,13 @@ export default class Map extends Evented {
             throw new Error(`Container ${container} not found`);
         }
 
-        this.bindEvents();
+        this.controls = new MapControls(this);
+
+        this.bindEvents(this.controls, [
+            'movestart',
+            'move',
+            'moveend',
+        ]);
     }
 
     addLayer(layer: ILayer) {
@@ -78,15 +94,15 @@ export default class Map extends Evented {
         return this.renderer.horizon;
     }
 
-    private bindEvents() {
-        const cloneEvents = [
-            'movestart',
-            'move',
-            'moveend',
-        ];
+    private bindEvents(evented: Evented, events: string[]) {
+        // const cloneEvents = [
+        //     'movestart',
+        //     'move',
+        //     'moveend',
+        // ];
 
-        for (const event of cloneEvents) {
-            this.renderer.controls.events.on(event, () => {
+        for (const event of events) {
+            evented.on(event, () => {
                 this.emit(event);
             });
         }

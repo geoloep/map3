@@ -28,7 +28,6 @@ export default class Tile extends Evented implements ILayer {
     }
 
     set zIndex(zIndex: number) {
-        console.log(this.tileMesh.material.polygonOffsetFactor, zIndex);
         this.options.zIndex = zIndex;
         this.tileMesh.material.polygonOffsetFactor = -zIndex;
     }
@@ -59,6 +58,7 @@ export default class Tile extends Evented implements ILayer {
     material() {
         return new MeshBasicMaterial({
             color: Math.random() * 0xffffff,
+            depthWrite: false,
             polygonOffset: true,
             polygonOffsetFactor: -this.zIndex,
             // polygonOffsetUnits: -10,

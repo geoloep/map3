@@ -29,7 +29,10 @@ export default class Tile extends Evented implements ILayer {
 
     set zIndex(zIndex: number) {
         this.options.zIndex = zIndex;
-        this.tileMesh.material.polygonOffsetFactor = -zIndex;
+        // this.tileMesh.material.polygonOffsetFactor = zIndex * -10;
+        // this.tileMesh.renderOrder = this.zIndex;
+        this.mesh.renderOrder = this.zIndex;
+        
     }
 
     // tslint:disable-next-line:no-empty

@@ -222,7 +222,7 @@ export default class MapControls extends Evented {
 
         // console.log(this.camera.position);
 
-        // this.emit('move');
+        this.emit('move');
         this.map.renderer.render();
     }
 

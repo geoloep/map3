@@ -153,6 +153,7 @@ export default class GridLayer extends Evented implements ILayer {
     private removeTiles(tiles: ITileIndex[]) {
         for (const tile of tiles) {
             tile.tile.zIndex = this.options.zIndex;
+            this.emit('update');
 
             this.tilesDeleting.push(this.tiles.splice(this.tiles.indexOf(tile), 1)[0]);
         }

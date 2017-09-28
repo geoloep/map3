@@ -33,7 +33,7 @@ export default class Renderer extends Evented {
     constructor(readonly map: Map, readonly container: HTMLElement) {
         super();
 
-        const camera = this.camera = new PerspectiveCamera(60, container.clientWidth / container.clientHeight, 1, 20000000);
+        const camera = this.camera = new PerspectiveCamera(60, container.clientWidth / container.clientHeight, 1, 300000);
         const scene = this.scene = new Scene();
 
         // let controls = this.controls = new OrbitControls(camera, container);
@@ -55,6 +55,8 @@ export default class Renderer extends Evented {
             antialias: true,
             logarithmicDepthBuffer: true,
         });
+
+        // renderer.
         renderer.setClearColor(0xbfd1e5);
         renderer.setPixelRatio(window.devicePixelRatio);
         renderer.setSize(container.clientWidth, container.clientHeight);

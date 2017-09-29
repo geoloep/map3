@@ -24,13 +24,13 @@ export default class Tile extends DebugTile implements ILayer {
 
         if (this.image) {
             material = await this.imageMaterial(this.image);
-            console.log(material.polygonOffsetUnits);
+            // console.log(material.polygonOffsetUnits);
         }
 
         this.tileMesh = new Mesh(this.geom, material);
 
         // this.tileMesh.renderOrder = this.zIndex;
-        this.mesh.renderOrder = this.zIndex;
+        // this.mesh.renderOrder = this.zIndex;
 
         this.mesh.add(this.tileMesh);
 
@@ -45,7 +45,7 @@ export default class Tile extends DebugTile implements ILayer {
             loader.load(path, (texture) => {
                 resolve (new MeshBasicMaterial({
                     map: texture,
-                    transparent: true,
+                    transparent: false,
                     // depthWrite: false,
                     // depthTest: false,
                     // polygonOffset: false,

@@ -60,10 +60,11 @@ export default class GridLayer extends Evented implements ILayer {
 
     set zIndex(zIndex: number) {
         this.options.zIndex = zIndex;
+        this.mesh.renderOrder = zIndex;
     }
 
     protected constructTile(description: ITileDescriptor) {
-        return new Tile(description.pos, description.bounds, this.options.zIndex + 1);
+        return new Tile(description.pos, description.bounds, this.zIndex + .01);
     }
 
     private createTile(description: ITileDescriptor) {
@@ -76,6 +77,7 @@ export default class GridLayer extends Evented implements ILayer {
 
         this.tilesLoading.push(tileIndex);
         this.mesh.add(tile.mesh);
+        this.mesh.onBeforeRender = ( renderer: any ) => { renderer.clearDepth(); };
 
         tile.once('tileloaded', () => {
             this.emit('update');
@@ -89,7 +91,7 @@ export default class GridLayer extends Evented implements ILayer {
     private restoreTile(tile: ITileIndex) {
         this.tileCache.splice(this.tileCache.indexOf(tile), 1);
 
-        tile.tile.zIndex = this.zIndex + 1;
+        tile.tile.zIndex = this.zIndex + .01;
         this.mesh.add(tile.tile.mesh);
         this.tiles.push(tile);
 

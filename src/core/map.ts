@@ -64,7 +64,9 @@ export default class Map extends Evented {
     }
 
     addLayer(layer: ILayer) {
-        layer.zIndex = this.layers.length * 10;
+        layer.zIndex = (this.layers.length * 10 / 100);
+        // layer.zIndex = this.layers.length * 10;
+        // layer.mesh.renderOrder = this.layers.length * 10;
         this.layers.push(layer);
         this.renderer.scene.add(layer.mesh);
 

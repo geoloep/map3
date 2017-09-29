@@ -20,7 +20,7 @@ export default class Tile extends Evented implements ILayer {
     constructor(public position: Vector3, public bounds: Bounds, zIndex: number) {
         super();
 
-        this.options.zIndex = zIndex;
+        this.zIndex = zIndex;
     }
 
     get zIndex() {
@@ -32,7 +32,14 @@ export default class Tile extends Evented implements ILayer {
         // this.tileMesh.material.polygonOffsetFactor = zIndex * -10;
         // this.tileMesh.renderOrder = this.zIndex;
         this.mesh.renderOrder = this.zIndex;
-        
+        // this.tileMesh.renderOrder = this.zIndex;
+        // this.mesh.remove(this.tileMesh);
+        // this.mesh.add(this.tileMesh);
+        if (this.tileMesh) {
+            this.tileMesh.renderOrder = zIndex;
+        }
+
+        console.log(zIndex, this.mesh.renderOrder);
     }
 
     // tslint:disable-next-line:no-empty
@@ -49,6 +56,9 @@ export default class Tile extends Evented implements ILayer {
 
                 this.tileMesh = new Mesh(this.geom, this.material());
 
+                this.mesh.renderOrder = this.zIndex;
+                this.tileMesh.renderOrder = this.zIndex;
+
                 this.mesh.add(this.tileMesh);
 
                 this.emit('tileloaded');
@@ -60,10 +70,12 @@ export default class Tile extends Evented implements ILayer {
 
     material() {
         return new MeshBasicMaterial({
-            color: Math.random() * 0xffffff,
-            depthWrite: false,
-            polygonOffset: true,
-            polygonOffsetFactor: -this.zIndex,
+            // color: Math.random() * 0xffffff,
+            color: 0xff0000,
+            // depthWrite: false,
+            // depthTest: false,
+            // polygonOffset: true,
+            // polygonOffsetFactor: -this.zIndex,
             // polygonOffsetUnits: -10,
         });
     }

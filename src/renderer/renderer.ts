@@ -56,7 +56,8 @@ export default class Renderer extends Evented {
             logarithmicDepthBuffer: true,
         });
 
-        // renderer.
+        // renderer.autoClear = true;
+        // renderer.sortObjects = true;
         renderer.setClearColor(0xbfd1e5);
         renderer.setPixelRatio(window.devicePixelRatio);
         renderer.setSize(container.clientWidth, container.clientHeight);

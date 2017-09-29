@@ -58,6 +58,7 @@ export default class Tile extends Evented implements ILayer {
 
                 this.mesh.renderOrder = this.zIndex;
                 this.tileMesh.renderOrder = this.zIndex;
+                this.tileMesh.onBeforeRender = ( renderer: any ) => { renderer.clearDepth(); };
 
                 this.mesh.add(this.tileMesh);
 

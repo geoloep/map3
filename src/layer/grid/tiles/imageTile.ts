@@ -31,6 +31,8 @@ export default class Tile extends DebugTile implements ILayer {
 
         // this.tileMesh.renderOrder = this.zIndex;
         // this.mesh.renderOrder = this.zIndex;
+        this.tileMesh.onBeforeRender = ( renderer: any ) => { renderer.clearDepth(); };
+        
 
         this.mesh.add(this.tileMesh);
 
@@ -45,7 +47,7 @@ export default class Tile extends DebugTile implements ILayer {
             loader.load(path, (texture) => {
                 resolve (new MeshBasicMaterial({
                     map: texture,
-                    transparent: false,
+                    transparent: true,
                     // depthWrite: false,
                     // depthTest: false,
                     // polygonOffset: false,

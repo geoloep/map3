@@ -77,7 +77,6 @@ export default class GridLayer extends Evented implements ILayer {
 
         this.tilesLoading.push(tileIndex);
         this.mesh.add(tile.mesh);
-        this.mesh.onBeforeRender = ( renderer: any ) => { renderer.clearDepth(); };
 
         tile.once('tileloaded', () => {
             this.emit('update');

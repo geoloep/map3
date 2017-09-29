@@ -8,7 +8,7 @@ import { Bounds } from '../geometry/basic';
 import GridUtil from '../layer/grid/gridUtil';
 import { ILayer } from '../layer/layer';
 
-import { Vector2, Vector3 } from 'three';
+import { Scene, Vector2, Vector3 } from 'three';
 
 export interface ICustomMapOptions {
     renderer?: Renderer;
@@ -37,6 +37,8 @@ export default class Map extends Evented {
 
     gridUtil = new GridUtil(this);
 
+    scenes: Scene[] = [];
+
     private layers: any[] = [];
 
     constructor(container: string, options?: ICustomMapOptions) {
@@ -64,11 +66,16 @@ export default class Map extends Evented {
     }
 
     addLayer(layer: ILayer) {
-        layer.zIndex = (this.layers.length * 10 / 100);
+        // layer.zIndex = (this.layers.length * 10 / 100);
         // layer.zIndex = this.layers.length * 10;
         // layer.mesh.renderOrder = this.layers.length * 10;
         this.layers.push(layer);
-        this.renderer.scene.add(layer.mesh);
+        // this.renderer.scene.add(layer.mesh);
+        
+        const scene = new Scene();
+        scene.add(layer.mesh);
+        
+        this.scenes.push(scene);
 
         layer.onAdd(this);
 

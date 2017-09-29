@@ -56,7 +56,7 @@ export default class Renderer extends Evented {
             logarithmicDepthBuffer: true,
         });
 
-        // renderer.autoClear = true;
+        renderer.autoClear = false;
         // renderer.sortObjects = true;
         renderer.setClearColor(0xbfd1e5);
         renderer.setPixelRatio(window.devicePixelRatio);
@@ -116,7 +116,14 @@ export default class Renderer extends Evented {
     }
 
     private renderFrame = () => {
-        this.renderer.render(this.scene, this.camera);
+        // this.renderer.render(this.scene, this.camera);
+
+        this.renderer.clear();
+        for (const scene of this.map.scenes) {
+            this.renderer.render(scene, this.camera);
+            this.renderer.clearDepth();
+        }
+
         this.emit('frame');
     }
 

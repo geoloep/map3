@@ -31,7 +31,7 @@ export default class Tile extends DebugTile implements ILayer {
 
         // this.tileMesh.renderOrder = this.zIndex;
         // this.mesh.renderOrder = this.zIndex;
-        this.tileMesh.onBeforeRender = ( renderer: any ) => { renderer.clearDepth(); };
+        // this.tileMesh.onBeforeRender = ( renderer: any ) => { renderer.clearDepth(); };
         
 
         this.mesh.add(this.tileMesh);

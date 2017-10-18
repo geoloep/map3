@@ -71,13 +71,7 @@ export default class Tile extends Evented implements ILayer {
 
     material() {
         return new MeshBasicMaterial({
-            // color: Math.random() * 0xffffff,
-            color: 0xff0000,
-            // depthWrite: false,
-            // depthTest: false,
-            // polygonOffset: true,
-            // polygonOffsetFactor: -this.zIndex,
-            // polygonOffsetUnits: -10,
+            color: Math.random() * 0xffffff,
         });
     }
 }

@@ -13,6 +13,7 @@ import { Scene, Vector2, Vector3 } from 'three';
 export interface ICustomMapOptions {
     renderer?: Renderer;
     zoomstep?: number;
+    zoom?: number;
 }
 
 // export interface IMapOptions {
@@ -23,11 +24,14 @@ export interface ICustomMapOptions {
 
 const defaultOptions = {
     zoomstep: 0.25,
+    zoom: 0,
     renderer: Renderer,
     controls: MapControls,
 };
 
 export default class Map extends Evented {
+    container: HTMLElement;
+
     options = defaultOptions;
 
     renderer: Renderer;
@@ -41,19 +45,20 @@ export default class Map extends Evented {
 
     private layers: any[] = [];
 
-    constructor(container: string, options?: ICustomMapOptions) {
+    constructor(readonly containerName: string, options?: ICustomMapOptions) {
         super();
 
         if (options) {
             Object.assign(this.options, options);
         }
 
-        const element: HTMLElement | null = document.getElementById(container);
+        const element: HTMLElement | null = document.getElementById(containerName);
 
         if (element !== null) {
-            this.renderer = new Renderer(this, element);
+            this.container = element;
+            this.renderer = new Renderer(this);
         } else {
-            throw new Error(`Container ${container} not found`);
+            throw new Error(`Container ${containerName} not found`);
         }
 
         this.controls = new MapControls(this);
@@ -66,15 +71,10 @@ export default class Map extends Evented {
     }
 
     addLayer(layer: ILayer) {
-        // layer.zIndex = (this.layers.length * 10 / 100);
-        // layer.zIndex = this.layers.length * 10;
-        // layer.mesh.renderOrder = this.layers.length * 10;
         this.layers.push(layer);
-        // this.renderer.scene.add(layer.mesh);
-        
+
         const scene = new Scene();
         scene.add(layer.mesh);
-        
         this.scenes.push(scene);
 
         layer.onAdd(this);
@@ -104,13 +104,16 @@ export default class Map extends Evented {
         return this.renderer.horizon;
     }
 
-    private bindEvents(evented: Evented, events: string[]) {
-        // const cloneEvents = [
-        //     'movestart',
-        //     'move',
-        //     'moveend',
-        // ];
+    get zoom() {
+        return this.options.zoom;
+    }
 
+    set zoom(zoom: number) {
+        this.options.zoom = zoom;
+        this.renderer.zoom = zoom;
+    }
+
+    private bindEvents(evented: Evented, events: string[]) {
         for (const event of events) {
             evented.on(event, () => {
                 this.emit(event);

@@ -5,9 +5,11 @@ import { AmbientLight, Camera, Clock, DirectionalLight, Mesh, PerspectiveCamera,
 import Map from '../core/map';
 import { Bounds } from '../geometry/basic';
 
+/**
+ * This default WebGL renderer renders with a ThreeJS Perspective Camera
+ */
 export default class Renderer extends Evented {
-    // events = new EventEmitter();
-
+    container: HTMLElement;
     renderer: WebGLRenderer;
     scene: Scene;
     camera: PerspectiveCamera;
@@ -30,26 +32,22 @@ export default class Renderer extends Evented {
 
     private redraw = true;
 
-    constructor(readonly map: Map, readonly container: HTMLElement) {
+    constructor(readonly map: Map) {
         super();
+
+        const container = this.container = map.container;
 
         const camera = this.camera = new PerspectiveCamera(60, container.clientWidth / container.clientHeight, 1, 300000);
         const scene = this.scene = new Scene();
 
-        // let controls = this.controls = new OrbitControls(camera, container);
-        // controls.target.set(142892.19, 470783.87, 0);
-
-        // controls.minAzimuthAngle = - 0.5 * Math.PI; // radians
-        // controls.maxAzimuthAngle = 0.5 * Math.PI; // radians
-
-        const licht1 = new DirectionalLight(0xffffff, 0.6);
-        licht1.position.set(0, 0, 1);
+        // const licht1 = new DirectionalLight(0xffffff, 0.6);
+        // licht1.position.set(0, 0, 1);
         // licht.target.position.set(142892.19, 470783.87, 250000);
-        scene.add(licht1);
+        // scene.add(licht1);
         // scene.add(licht.target);
 
-        const licht = new AmbientLight(0x404040, 1);
-        scene.add(licht);
+        // const licht = new AmbientLight(0x404040, 1);
+        // scene.add(licht);
 
         const renderer = this.renderer = new WebGLRenderer({
             antialias: true,
@@ -57,7 +55,6 @@ export default class Renderer extends Evented {
         });
 
         renderer.autoClear = false;
-        // renderer.sortObjects = true;
         renderer.setClearColor(0xbfd1e5);
         renderer.setPixelRatio(window.devicePixelRatio);
         renderer.setSize(container.clientWidth, container.clientHeight);
@@ -65,7 +62,6 @@ export default class Renderer extends Evented {
         container.appendChild(renderer.domElement);
 
         camera.position.set(142892.19, 470783.87, 15000);
-        // camera.position.set(-285401.920, 903401.920, 250000);
 
         camera.up.set(0, 0, 1);
 
@@ -104,27 +100,8 @@ export default class Renderer extends Evented {
         this.redraw = true;
     }
 
-    private animate = () => {
-        this.emit('tick');
-
-        if (this.redraw) {
-            this.renderFrame();
-            this.redraw = false;
-        }
-
-        requestAnimationFrame(this.animate);
-    }
-
-    private renderFrame = () => {
-        // this.renderer.render(this.scene, this.camera);
-
-        this.renderer.clear();
-        for (const scene of this.map.scenes) {
-            this.renderer.render(scene, this.camera);
-            this.renderer.clearDepth();
-        }
-
-        this.emit('frame');
+    set zoom(zoom: number) {
+        
     }
 
     get bounds() {
@@ -176,5 +153,38 @@ export default class Renderer extends Evented {
 
     get clientHeight() {
         return this.container.clientHeight;
+    }
+
+    zoomDistance(zoom: number) {
+        const res = this.map.projection.resolution(zoom);
+
+        const fov = this.map.renderer.camera.fov * Math.PI / 180;
+        const ratio = 2 * Math.tan(fov / 2);
+
+        const distance = (this.map.renderer.clientHeight * res) / ratio;
+        return distance;
+    }
+
+    private animate = () => {
+        this.emit('tick');
+
+        if (this.redraw) {
+            this.renderFrame();
+            this.redraw = false;
+        }
+
+        requestAnimationFrame(this.animate);
+    }
+
+    private renderFrame = () => {
+        // this.renderer.render(this.scene, this.camera);
+
+        this.renderer.clear();
+        for (const scene of this.map.scenes) {
+            this.renderer.render(scene, this.camera);
+            this.renderer.clearDepth();
+        }
+
+        this.emit('frame');
     }
 }

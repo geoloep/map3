@@ -67,7 +67,7 @@ export default class MapControls extends Evented {
     private renderer: WebGLRenderer;
     private camera: Camera;
 
-    constructor(private map: Map/*, private camera: Camera, private renderer: WebGLRenderer, private plane: Plane*/) {
+    constructor(private map: Map) {
         super();
 
         const renderer = this.renderer = map.renderer.renderer;
@@ -105,11 +105,6 @@ export default class MapControls extends Evented {
         if (!this.touch) {
             this.setMousePosition(e.offsetX, e.offsetY);
         }
-
-        // this.mousePosition.set(
-        //     (e.offsetX / this.renderer.domElement.clientWidth) * 2 - 1,
-        //     - (e.offsetY / this.renderer.domElement.clientWidth) * 2 + 1,
-        // );
     }
 
     private onMouseDown = (e: MouseEvent) => {
@@ -220,8 +215,6 @@ export default class MapControls extends Evented {
         // Rotate camera to the target
         this.camera.lookAt(this.target);
 
-        // console.log(this.camera.position);
-
         this.emit('move');
         this.map.renderer.render();
     }
@@ -267,8 +260,7 @@ export default class MapControls extends Evented {
         }
 
         this.setZoom(this.zoomLevel);
-
-        // this.spherical.radius = Math.max(this.spherical.radius + e.deltaY * this.zoomScale, this.minZoom);
+        // this.map.zoom = this.zoomLevel;
 
         this.update();
 
@@ -290,7 +282,7 @@ export default class MapControls extends Evented {
 
         this.setZoom(this.zoomLevel);
 
-        // this.spherical.radius = Math.min(this.spherical.radius + e.deltaY * this.zoomScale, this.maxZoom);
+        // this.map.zoom = this.zoomLevel;
 
         this.update();
 
@@ -329,7 +321,7 @@ export default class MapControls extends Evented {
     }
 
     private pan() {
-        let pos = this.raycast(this.mousePosition);
+        const pos = this.raycast(this.mousePosition);
 
         this.panOffset.subVectors(this.panStart, pos);
 
@@ -349,7 +341,7 @@ export default class MapControls extends Evented {
     }
 
     private setZoom(zoom: number) {
-        this.spherical.radius = this.zoomDist(zoom);
+        this.spherical.radius = this.map.renderer.zoomDistance(zoom);
     }
 
     private zoomDist(zoom: number) {
@@ -360,17 +352,6 @@ export default class MapControls extends Evented {
 
         const distance = (this.map.renderer.clientHeight * res) / ratio;
         return distance;
-
-        // console.log(this.zoomLevel, res, distance, ratio);
-
-        // const visibleHeight = this.map.renderer.clientHeight * res;
-
-        // const distance = this.map.horizon.distanceTo(this.map.renderer.camera.position);
-        // const fov = this.map.renderer.camera.fov * Math.PI / 180;
-
-        // const visibleHeight = 2 * Math.tan( fov / 2 ) * distance;
-
-        // return visibleHeight / this.map.renderer.clientHeight ;
     }
 
     private raycast(mouse: Vector2) {

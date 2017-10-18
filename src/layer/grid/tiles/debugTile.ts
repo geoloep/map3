@@ -17,10 +17,10 @@ export default class Tile extends Evented implements ILayer {
         zIndex: 0,
     };
 
-    constructor(public position: Vector3, public bounds: Bounds, zIndex: number) {
+    constructor(public position: Vector3, public bounds: Bounds) {
         super();
 
-        this.zIndex = zIndex;
+        // this.zIndex = zIndex;
     }
 
     get zIndex() {
@@ -29,17 +29,6 @@ export default class Tile extends Evented implements ILayer {
 
     set zIndex(zIndex: number) {
         this.options.zIndex = zIndex;
-        // this.tileMesh.material.polygonOffsetFactor = zIndex * -10;
-        // this.tileMesh.renderOrder = this.zIndex;
-        this.mesh.renderOrder = this.zIndex;
-        // this.tileMesh.renderOrder = this.zIndex;
-        // this.mesh.remove(this.tileMesh);
-        // this.mesh.add(this.tileMesh);
-        if (this.tileMesh) {
-            this.tileMesh.renderOrder = zIndex;
-        }
-
-        console.log(zIndex, this.mesh.renderOrder);
     }
 
     // tslint:disable-next-line:no-empty
@@ -55,10 +44,6 @@ export default class Tile extends Evented implements ILayer {
                 this.geom.translate(center.x, center.y, 0);
 
                 this.tileMesh = new Mesh(this.geom, this.material());
-
-                this.mesh.renderOrder = this.zIndex;
-                this.tileMesh.renderOrder = this.zIndex;
-                this.tileMesh.onBeforeRender = ( renderer: any ) => { renderer.clearDepth(); };
 
                 this.mesh.add(this.tileMesh);
 

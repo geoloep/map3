@@ -4,12 +4,6 @@ import { Bounds } from '../geometry/basic';
 export default class RD {
     tileSize = 256;
     maxZoom = 14;
-    // tileHeight = 256;
-
-    // bounds = new Bounds(
-    //     new Vector2(-285401.920, 903401.920),
-    //     new Vector2(595401.920, 22598.080),
-    // );
 
     bounds = new Bounds(
         new Vector2(-285401.920, 22598.080),
@@ -19,9 +13,6 @@ export default class RD {
     tileOrigin = new Vector2(-285401.920, 903401.920);
 
     zeroScale = 3440.640;
-
-    constructor() {
-    }
 
     resolution(zoom: number) {
         return (this.zeroScale * Math.pow(0.5, zoom));

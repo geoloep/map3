@@ -11,7 +11,7 @@ export default class TileLayer extends gridLayer {
     }
 
     protected constructTile(description: ITileDescriptor) {
-        return new ImageTile(description.pos, description.bounds, this.options.zIndex, this.imageUrl(description.pos));
+        return new ImageTile(description.pos, description.bounds, this.imageUrl(description.pos));
     }
 
     private imageUrl(position: Vector3) {

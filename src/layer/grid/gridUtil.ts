@@ -46,11 +46,56 @@ export default class GridUtil extends Evented {
     }
 
     private calculateTiles() {
+        if (this.map.renderer.topDown) {
+            this.calculateTilesTopDown();
+        } else {
+            this.calculateTilesPitched();
+        }
+    }
+
+    private calculateTilesTopDown() {
+        // let i: number;
+        // let j: number;
+
+        const bounds = this.map.bounds.clamp(this.map.projection.bounds);
+        const zoom =  Math.ceil(this.calculateZoom(this.horizonResolution()));
+
+        // Create bounds in transfomed space
+        const transformedBounds = new Bounds(
+            this.map.projection.transform(bounds.topLeft),
+            this.map.projection.transform(bounds.bottomRight),
+        );
+
+        const topLeftTile = new Vector3();
+        const bottomRightTile = new Vector3();
+
+        this.pointToTilePos(transformedBounds.topLeft, zoom, topLeftTile);
+        this.pointToTilePos(transformedBounds.bottomRight, zoom, bottomRightTile);
+
+        this.tiles.splice(0);
+
+        let newPos: Vector3;
+
+        for (let i = topLeftTile.x; i <= bottomRightTile.x; i++) {
+            for (let j = bottomRightTile.y; j <= topLeftTile.y; j++) {
+                newPos = new Vector3(i, j, zoom);
+
+                this.tiles.push({
+                    pos: newPos,
+                    bounds: this.calculateBounds(newPos),
+                });
+            }
+        }
+
+        console.log(this.tiles.length);
+        this.emit('renew');
+    }
+
+    private calculateTilesPitched() {
         let i: number;
         let j: number;
 
         const bounds = this.map.bounds.clamp(this.map.projection.bounds);
-        console.log(bounds);
 
         // Create bounds in transfomed space
         const transformedBounds = new Bounds(

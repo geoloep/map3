@@ -66,8 +66,6 @@ export class Bounds {
     }
 
     intersects(other: Bounds) {
-        // return (other.left > this.left && this.left < other.right) || (other.left < this.right && this.right) || (other.bottom < this.bottom && other.bottom < this.top) || (other.top > this.bottom)
-        // return ((other.left < this.right && other.left > this.left) || (other.right > this.left && other.right < this.right)) && ((other.top > this.bottom && other.top < this.top) || (other.bottom < this.top && other.bottom > this.bottom));
         return ((other.topRight.x >= this.bottomLeft.x) && (other.bottomLeft.x <= this.topRight.x)) && ((other.topRight.y >= this.bottomLeft.y) && (other.bottomLeft.y <= this.topRight.y));
     }
 }

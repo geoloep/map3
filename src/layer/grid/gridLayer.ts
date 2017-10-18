@@ -60,11 +60,11 @@ export default class GridLayer extends Evented implements ILayer {
 
     set zIndex(zIndex: number) {
         this.options.zIndex = zIndex;
-        this.mesh.renderOrder = zIndex;
+        // this.mesh.renderOrder = zIndex;
     }
 
     protected constructTile(description: ITileDescriptor) {
-        return new Tile(description.pos, description.bounds, this.zIndex + .01);
+        return new Tile(description.pos, description.bounds);
     }
 
     private createTile(description: ITileDescriptor) {
@@ -90,7 +90,7 @@ export default class GridLayer extends Evented implements ILayer {
     private restoreTile(tile: ITileIndex) {
         this.tileCache.splice(this.tileCache.indexOf(tile), 1);
 
-        tile.tile.zIndex = this.zIndex + .01;
+        // tile.tile.zIndex = this.zIndex + .01;
         this.mesh.add(tile.tile.mesh);
         this.tiles.push(tile);
 
@@ -115,19 +115,6 @@ export default class GridLayer extends Evented implements ILayer {
     }
 
     private purgeTiles() {
-        // for (const tile of tiles) {
-        //     this.mesh.remove(tile.tile.mesh);
-        //     this.tileCache.push(this.tiles.splice(this.tiles.indexOf(tile), 1)[0]);
-        // }
-
-        // if (this.tileCache.length > this.cacheLimit) {
-        //     this.tileCache.splice(0, this.tileCache.length - this.cacheLimit);
-        // }
-
-        // for (const tile of this.tilesDeleting) {
-        //     this.mesh.remove(tile.tile.mesh);
-
-        // }
         let tile: ITileIndex;
 
         while (this.tilesDeleting.length > 0) {
@@ -153,7 +140,7 @@ export default class GridLayer extends Evented implements ILayer {
      */
     private removeTiles(tiles: ITileIndex[]) {
         for (const tile of tiles) {
-            tile.tile.zIndex = this.options.zIndex;
+            // tile.tile.zIndex = this.options.zIndex;
             this.emit('update');
 
             this.tilesDeleting.push(this.tiles.splice(this.tiles.indexOf(tile), 1)[0]);

@@ -40,15 +40,6 @@ export default class Renderer extends Evented {
         const camera = this.camera = new PerspectiveCamera(60, container.clientWidth / container.clientHeight, 1, 300000);
         const scene = this.scene = new Scene();
 
-        // const licht1 = new DirectionalLight(0xffffff, 0.6);
-        // licht1.position.set(0, 0, 1);
-        // licht.target.position.set(142892.19, 470783.87, 250000);
-        // scene.add(licht1);
-        // scene.add(licht.target);
-
-        // const licht = new AmbientLight(0x404040, 1);
-        // scene.add(licht);
-
         const renderer = this.renderer = new WebGLRenderer({
             antialias: true,
             logarithmicDepthBuffer: true,
@@ -67,29 +58,6 @@ export default class Renderer extends Evented {
 
         const plane = this.plane = new Plane(new Vector3(0, 0, 1));
 
-        // const controls = this.controls = new MapControls(map, camera, renderer, plane);
-
-        // const sg = new SphereBufferGeometry(20000, 32, 32);
-        // const sp = new Mesh(sg);
-        // sp.position.copy(controls.target);
-        // scene.add(sp);
-
-        // controls.addEventListener('change', () => {
-        //     this.render();
-        //     sp.position.copy(controls.target);
-
-        // });
-
-        // controls.onChange = () => {
-        //     this.render();
-        //     // sp.position.copy(controls.panStart);
-        // };
-
-        // controls.on('move', () => {
-        //     this.redraw = true;
-        // });
-
-        // this.render();
         this.animate();
     }
 
@@ -102,6 +70,10 @@ export default class Renderer extends Evented {
 
     set zoom(zoom: number) {
         
+    }
+
+    get topDown() {
+        return this.camera.quaternion.x < 0.1;
     }
 
     get bounds() {

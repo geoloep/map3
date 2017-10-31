@@ -14,14 +14,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { Group, Mesh } from 'three';
+import { Object3D } from 'three';
 
 import Evented from '../core/evented';
 
 import Map from '../core/map';
 
 export interface ILayer extends Evented {
-    mesh: Mesh | Group;
+    mesh: Object3D | Object3D[];
     zIndex: number;
 
     onAdd(map: Map): void;

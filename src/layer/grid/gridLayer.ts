@@ -27,7 +27,7 @@ import Tile from './tiles/debugTile';
 
 export interface ITileIndex {
     pos: Vector3;
-    tile: ILayer;
+    tile: Tile;
 }
 
 export interface IGridLayerCustomOptions {

@@ -24,7 +24,7 @@ import { Bounds } from '../geometry/basic';
 import GridUtil from '../layer/grid/gridUtil';
 import { ILayer } from '../layer/layer';
 
-import { Scene, Vector2, Vector3 } from 'three';
+import { Object3D, Scene, Vector2, Vector3 } from 'three';
 
 export interface ICustomMapOptions {
     renderer?: Renderer;
@@ -37,6 +37,12 @@ export interface ICustomMapOptions {
 //     renderer: Renderer;
 //     zoomstep: number;
 // }
+
+interface ILayerDesc {
+    layer: ILayer;
+    order: number;
+    scenes: Scene[];
+}
 
 const defaultOptions = {
     zoomstep: 0.25,
@@ -59,7 +65,7 @@ export default class Map extends Evented {
 
     scenes: Scene[] = [];
 
-    private layers: any[] = [];
+    private layers: ILayerDesc[] = [];
 
     constructor(readonly containerName: string, options?: ICustomMapOptions) {
         super();
@@ -91,11 +97,15 @@ export default class Map extends Evented {
     }
 
     addLayer(layer: ILayer) {
-        this.layers.push(layer);
+        const scenes = this.allocateScenes(layer);
 
-        const scene = new Scene();
-        scene.add(layer.mesh);
-        this.scenes.push(scene);
+        this.layers.push({
+            layer,
+            order: this.layers.length,
+            scenes,
+        });
+
+        this.queueScenes();
 
         layer.onAdd(this);
 
@@ -106,9 +116,12 @@ export default class Map extends Evented {
         this.renderer.render();
     }
 
-    removeLayer(layer: any) {
-        if (this.layers.indexOf(layer) >= 0) {
-            this.layers.splice(this.layers.indexOf(layer), 1);
+    removeLayer(layer: ILayer) {
+        for (let i = 0; i < this.layers.length; i++) {
+            if (this.layers[i].layer === layer) {
+                this.layers.splice(i, 1);
+                layer.clear();
+            }
         }
     }
 
@@ -131,6 +144,48 @@ export default class Map extends Evented {
     set zoom(zoom: number) {
         this.options.zoom = zoom;
         this.renderer.zoom = zoom;
+    }
+
+    /**
+     * Order layers by their order value
+     */
+    private get orderedLayers() {
+        return this.layers.sort((a, b) => {
+            return a.order - b.order;
+        });
+    }
+
+    /**
+     * Add all sublayers of layer to a scene
+     * @param layer
+     */
+    private allocateScenes(layer: ILayer) {
+        const layers = 'length' in layer.mesh ? layer.mesh as Object3D[] : [layer.mesh as Object3D];
+        const scenes: Scene[] = [];
+        let scene: Scene;
+
+        for (const l of layers) {
+            scene = new Scene();
+            scene.add(l);
+            scenes.push(scene);
+        }
+
+        return scenes;
+    }
+
+    /**
+     * Create an array of scenes in the correct render order
+     */
+    private queueScenes() {
+        this.scenes.splice(0);
+
+        for (const layer of this.orderedLayers) {
+            for (const scene of layer.scenes) {
+                if (this.scenes.indexOf(scene) === -1) {
+                    this.scenes.push(scene);
+                }
+            }
+        }
     }
 
     private bindEvents(evented: Evented, events: string[]) {

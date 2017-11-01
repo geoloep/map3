@@ -16,6 +16,8 @@ limitations under the License.
 
 import Evented from '../core/evented';
 
+import Stats from 'stats.js';
+
 import { AmbientLight, Camera, Clock, DirectionalLight, Mesh, PerspectiveCamera, Plane, Raycaster, Scene, SphereBufferGeometry, Vector2, Vector3, WebGLRenderer } from 'three';
 
 import Map from '../core/map';
@@ -32,6 +34,7 @@ export default class Renderer extends Evented {
     controls: any;
     clock = new Clock();
     plane: Plane;
+    stats: any;
 
     private horizonRay = new Raycaster();
 
@@ -73,6 +76,10 @@ export default class Renderer extends Evented {
         camera.up.set(0, 0, 1);
 
         const plane = this.plane = new Plane(new Vector3(0, 0, 1));
+
+        this.stats = new Stats();
+        this.stats.dom.cssText = 'position:absolute;top:0;left:0;cursor:pointer;opacity:0.9;z-index:10000';
+        container.appendChild(this.stats.dom);
 
         this.animate();
     }
@@ -167,11 +174,15 @@ export default class Renderer extends Evented {
     private renderFrame = () => {
         // this.renderer.render(this.scene, this.camera);
 
+        this.stats.begin();
+
         this.renderer.clear();
         for (const scene of this.map.scenes) {
             this.renderer.render(scene, this.camera);
             this.renderer.clearDepth();
         }
+
+        this.stats.end();
 
         this.emit('frame');
     }

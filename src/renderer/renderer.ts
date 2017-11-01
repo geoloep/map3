@@ -179,7 +179,7 @@ export default class Renderer extends Evented {
         this.renderer.clear();
         for (const scene of this.map.scenes) {
             this.renderer.render(scene, this.camera);
-            this.renderer.clearDepth();
+            // this.renderer.clearDepth();
         }
 
         this.stats.end();

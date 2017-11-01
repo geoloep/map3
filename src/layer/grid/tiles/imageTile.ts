@@ -57,6 +57,8 @@ export default class Tile extends DebugTile implements ILayer {
                 resolve (new MeshBasicMaterial({
                     map: texture,
                     transparent: true,
+                    depthTest: false,
+                    depthWrite: false,
                 }));
             });
         });

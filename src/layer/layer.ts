@@ -22,7 +22,7 @@ import Map from '../core/map';
 
 export interface ILayer extends Evented {
     mesh: Object3D | Object3D[];
-    zIndex: number;
+    // zIndex: number;
 
     onAdd(map: Map): void;
 }

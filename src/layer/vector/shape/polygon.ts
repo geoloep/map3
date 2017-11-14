@@ -1,4 +1,4 @@
-import { Geometry, Line, LineBasicMaterial, Mesh, MeshBasicMaterial, Shape, ShapeBufferGeometry, Vector3 } from 'three';
+import { Geometry, Line, LineBasicMaterial, Mesh, MeshBasicMaterial, Shape, ShapeBufferGeometry,  Vector3 } from 'three';
 
 import buffer from '@turf/buffer';
 

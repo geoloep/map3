@@ -1,6 +1,7 @@
-import { Geometry, Line, LineBasicMaterial, Mesh, MeshBasicMaterial, Shape, ShapeBufferGeometry,  Vector3 } from 'three';
+import { Geometry, Line, LineBasicMaterial, Mesh, MeshBasicMaterial, ShaderMaterial, Shape,  ShapeBufferGeometry, Vector3 } from 'three';
 
 import buffer from '@turf/buffer';
+import { Group } from 'three';
 
 export default class PolygonShape {
     private shape: Shape;

@@ -1,30 +1,41 @@
-import { Group, Mesh, Shape, ShapeBufferGeometry } from 'three';
+import { Geometry, Line, LineBasicMaterial, Mesh, MeshBasicMaterial, Shape, ShapeBufferGeometry, Vector3 } from 'three';
 
 import PolygonShape from './polygon';
 
 export default class MultiPolygonShape {
+    private shape: Shape[];
+    private _mesh: Mesh;
+    private _line: Line;
+
     constructor(private feature: GeoJSON.Feature<GeoJSON.MultiPolygon>, style?: any) {
+
     }
 
-    mesh() {
-        const geom = this.toShape(this.feature.geometry);
+    get mesh() {
+        if (!this.shape) {
+            this.shape = this.toShape(this.feature.geometry as any);
+        }
 
-        // const group = new Group();
+        return new Mesh(new ShapeBufferGeometry(this.shape));
+    }
 
-        return new Mesh(new ShapeBufferGeometry(geom));
+    get line() {
+        if (!this.shape) {
+            this.shape = this.toShape(this.feature.geometry);
+        }
 
-        // for (const s of geom) {
-        //     group.add(new Mesh(new ShapeBufferGeometry(s)));
-        // }
+        return new Line(this.shape[0].createPointsGeometry(1), new LineBasicMaterial());
     }
 
     protected toShape(geom: GeoJSON.MultiPolygon) {
+        let shape: Shape;
         const shapes: Shape[] = [];
 
-        for (const part of geom.coordinates) {
-            const shape = new Shape();
-            let first = true;
+        let first;
 
+        for (const part of geom.coordinates) {
+            shape = new Shape();
+            first = true;
             for (const ring of part) {
                 for (const vertice of ring) {
                     if (first) {

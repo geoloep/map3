@@ -49,16 +49,18 @@ export default class GeoJsonLayer extends Evented implements ILayer {
             // this.mesh.add(new PolygonShape(feature as any).mesh());
 
             if (feature.geometry.type === 'Polygon') {
-                // this.mesh[0].add(new PolygonShape(feature as any).mesh());
                 shape = new PolygonShape(feature as any);
+
+                this.mesh[0].add(shape.mesh);
+                this.mesh[1].add(shape.line);
             } else if (feature.geometry.type === 'MultiPolygon') {
-                // this.mesh[0].add(new PolygonShape(feature as any);.mesh());
-                continue;
-                // shape = new PolygonShape(feature as any);
+                shape = new MultiPolygonShape(feature as any);
+
+                this.mesh[0].add(shape.mesh);
+                this.mesh[1].add(shape.line);
             }
 
-            this.mesh[0].add(shape.mesh);
-            this.mesh[1].add(shape.line);
+
         }
     }
 }
